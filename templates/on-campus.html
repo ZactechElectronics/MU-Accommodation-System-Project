@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MU • On-Campus Accommodation</title>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&display=swap" rel="stylesheet">
+    <!-- Styles -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/on-campus.css' %}">
+</head>
+<body>
+    <div class="app">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo-area">
+                <span class="logo-icon"><i class="fas fa-graduation-cap"></i></span>
+                <span class="logo-text">MULUNGUSHI</span>
+                <span class="logo-sub">Accommodation System</span>
+            </div>
+            <nav class="nav">
+                <a href="admin-dashboard.html" class="nav-item">
+                    <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
+                </a>
+                <a href="students.html" class="nav-item">
+                    <i class="fas fa-user-graduate"></i> <span>Students</span>
+                </a>
+                <div class="nav-divider"></div>
+                <div class="nav-section-title">Accommodation</div>
+                <a href="applications.html" class="nav-item">
+                    <i class="fas fa-file-signature"></i> <span>Applications</span>
+                </a>
+                <a href="on-campus.html" class="nav-item active">
+                    <i class="fas fa-building"></i> <span>On‑Campus</span>
+                </a>
+                <a href="off-campus.html" class="nav-item">
+                    <i class="fas fa-home"></i> <span>Off‑Campus</span>
+                </a>
+                <a href="analytics.html" class="nav-item">
+                    <i class="fas fa-chart-pie"></i> <span>Analytics</span>
+                </a>
+                <a href="activity.html" class="nav-item">
+                    <i class="fas fa-clock"></i> <span>Activity Monitor</span>
+                </a>
+                <div class="nav-divider"></div>
+                <a href="settings.html" class="nav-item">
+                    <i class="fas fa-cog"></i> <span>Settings</span>
+                </a>
+                <a href="/" class="nav-item logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Top Bar -->
+            <header class="topbar">
+                <div class="page-title">
+                    <h1>On-Campus Accommodation</h1>
+                    <p>Manage hostels, rooms, and sabbatical houses</p>
+                </div>
+                <div class="admin-badge">
+                    <i class="fas fa-user-shield"></i> Administrator
+                </div>
+            </header>
+
+            <!-- Section Tabs -->
+            <div class="section-tabs">
+                <button class="section-tab active" data-section="upschool">
+                    <i class="fas fa-arrow-up"></i> Up-School
+                </button>
+                <button class="section-tab" data-section="downschool">
+                    <i class="fas fa-arrow-down"></i> Down-School
+                </button>
+                <button class="section-tab" data-section="freshers">
+                    <i class="fas fa-users"></i> Freshers Compound
+                </button>
+                <button class="section-tab" data-section="sabbaticals">
+                    <i class="fas fa-home"></i> Sabbaticals
+                </button>
+            </div>
+
+            <!-- Add Hostel Button -->
+            <div class="add-hostel-wrapper">
+                <button class="btn-primary" id="addHostelBtn">
+                    <i class="fas fa-plus"></i> Add New Hostel / House
+                </button>
+            </div>
+
+            <!-- Up-School Section -->
+            <div id="upschoolSection" class="section-content active">
+                <div class="section-header">
+                    <h2><i class="fas fa-arrow-up"></i> Up-School Hostels</h2>
+                    <span class="hostel-count" id="upschoolCount">0 Hostels</span>
+                </div>
+                <div class="hostels-grid" id="upschoolGrid">
+                    <div style="text-align:center; padding:40px;">Loading hostels...</div>
+                </div>
+            </div>
+
+            <!-- Down-School Section -->
+            <div id="downschoolSection" class="section-content">
+                <div class="section-header">
+                    <h2><i class="fas fa-arrow-down"></i> Down-School Hostels</h2>
+                    <span class="hostel-count" id="downschoolCount">0 Hostels</span>
+                </div>
+                <div class="hostels-grid" id="downschoolGrid">
+                    <div style="text-align:center; padding:40px;">Loading hostels...</div>
+                </div>
+            </div>
+
+            <!-- Freshers Compound Section -->
+            <div id="freshersSection" class="section-content">
+                <div class="section-header">
+                    <h2><i class="fas fa-users"></i> Freshers Compound</h2>
+                    <span class="hostel-count" id="freshersCount">0 Hostels</span>
+                </div>
+                <div class="hostels-grid" id="freshersGrid">
+                    <div style="text-align:center; padding:40px;">Loading hostels...</div>
+                </div>
+            </div>
+
+            <!-- Sabbaticals Section -->
+            <div id="sabbaticalsSection" class="section-content">
+                <div class="section-header">
+                    <h2><i class="fas fa-home"></i> Sabbatical Houses</h2>
+                    <span class="hostel-count" id="sabbaticalsCount">0 Houses</span>
+                </div>
+                <div class="hostels-grid" id="sabbaticalsGrid">
+                    <div style="text-align:center; padding:40px;">Loading sabbaticals...</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add/Edit Hostel Modal -->
+    <div id="hostelModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2 id="modalTitle"><i class="fas fa-building"></i> Add Hostel</h2>
+                <button class="modal-close" onclick="closeHostelModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="hostelForm">
+                    <input type="hidden" id="hostelId">
+                    <input type="hidden" id="hostelSection">
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="hostelName">Hostel/House Name <span class="required">*</span></label>
+                            <input type="text" id="hostelName" required placeholder="e.g., Bangweulu Hostel">
+                        </div>
+                        <div class="form-group">
+                            <label for="hostelType">Type</label>
+                            <select id="hostelType">
+                                <option value="hostel">Hostel</option>
+                                <option value="sabbatical">Sabbatical House</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="hostelGender">Gender Policy</label>
+                            <select id="hostelGender">
+                                <option value="mixed">Mixed (All Genders)</option>
+                                <option value="male">Male Only</option>
+                                <option value="female">Female Only</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="hostelCapacity">Total Capacity</label>
+                            <input type="number" id="hostelCapacity" min="1" value="50">
+                        </div>
+                    </div>
+
+                    <div class="form-row" id="sabbaticalOptions" style="display: none;">
+                        <div class="form-group">
+                            <label for="hasServantQuarter">Servant Quarter</label>
+                            <select id="hasServantQuarter">
+                                <option value="no">No Servant Quarter</option>
+                                <option value="yes">Has Servant Quarter</option>
+                                <option value="is">Is Servant Quarter</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="houseNumber">House Number</label>
+                            <input type="text" id="houseNumber" placeholder="e.g., Sabbatical 1">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Hostel Image</label>
+                        <div id="imageDropzone" class="upload-dropzone">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Drag & drop an image here, or click to browse</p>
+                            <small>PNG, JPG, GIF up to 5MB</small>
+                        </div>
+                        <input type="file" id="hostelImageUpload" accept="image/*" style="display: none;">
+                        <div id="imagePreviewContainer" style="margin-top: 16px; display: none;">
+                            <label>Preview</label>
+                            <div class="image-preview-wrapper">
+                                <img id="imagePreview" src="" alt="Preview" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 12px;">
+                                <button type="button" class="remove-image-btn" onclick="removeSelectedImage()">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <input type="hidden" id="hostelImageData" value="">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="hostelDescription">Description (Optional)</label>
+                        <textarea id="hostelDescription" rows="3" placeholder="Enter hostel description..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-outline" onclick="closeHostelModal()">Cancel</button>
+                <button class="btn-primary" id="saveHostelBtn">
+                    <i class="fas fa-save"></i> Save Hostel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Room Management Modal -->
+    <div id="roomManagementModal" class="modal">
+        <div class="modal-content modal-xlarge">
+            <div class="modal-header">
+                <h2><i class="fas fa-door-open"></i> Manage Rooms - <span id="roomHostelName"></span></h2>
+                <button class="modal-close" onclick="closeRoomModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="rooms-header">
+                    <h3>Rooms List</h3>
+                    <button class="btn-primary" id="addRoomBtn">
+                        <i class="fas fa-plus"></i> Add Room
+                    </button>
+                </div>
+                <div class="rooms-list" id="roomsList">
+                    <div style="text-align:center; padding:40px;">Loading rooms...</div>
+                </div>
+
+                <div class="add-room-form" id="addRoomForm" style="display: none;">
+                    <h4>Add New Room</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Room Number</label>
+                            <input type="text" id="newRoomNumber" placeholder="e.g., A101">
+                        </div>
+                        <div class="form-group">
+                            <label>Capacity</label>
+                            <input type="number" id="newRoomCapacity" min="1" value="2">
+                        </div>
+                        <div class="form-group">
+                            <label>Floor</label>
+                            <input type="text" id="newRoomFloor" placeholder="e.g., Ground">
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn-outline" onclick="hideAddRoomForm()">Cancel</button>
+                        <button class="btn-primary" id="saveRoomBtn">Add Room</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-outline" onclick="closeRoomModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-exclamation-triangle"></i> Confirm Delete</h2>
+                <button class="modal-close" onclick="closeDeleteModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong id="deleteItemName"></strong>?</p>
+                <p class="warning-text">This action cannot be undone. All associated rooms will also be deleted.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-outline" onclick="closeDeleteModal()">Cancel</button>
+                <button class="btn-danger" id="confirmDeleteBtn">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="{% static 'js/config.js' %}"></script>
+    <script src="{% static 'js/services/api.service.js' %}"></script>
+    <script src="{% static 'js/services/auth.service.js' %}"></script>
+    <script src="{% static 'js/services/student.service.js' %}"></script>
+    <script src="{% static 'js/services/accommodation.service.js' %}"></script>
+    <script src="{% static 'js/services/application.service.js' %}"></script>
+    <script src="{% static 'js/app.js' %}"></script>
+    <script src="{% static 'js/on-campus.js' %}"></script>
+</body>
+</html>

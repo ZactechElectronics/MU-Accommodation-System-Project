@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MU • Accommodation Admin</title>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&display=swap" rel="stylesheet">
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <div class="app">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo-area">
+                <span class="logo-icon"><i class="fas fa-graduation-cap"></i></span>
+                <span class="logo-text">MULUNGUSHI</span>
+                <span class="logo-sub">Accommodation System</span>
+            </div>
+            <nav class="nav">
+                <a href="#" class="nav-item active" data-page="dashboard">
+                    <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
+                </a>
+                <a href="students.html" class="nav-item" data-page="students">
+                    <i class="fas fa-user-graduate"></i> <span>Students</span>
+                </a>
+                <div class="nav-divider"></div>
+                <div class="nav-section-title">Accommodation</div>
+                <a href="applications.html" class="nav-item">
+                    <i class="fas fa-file-signature"></i> <span>Applications</span>
+                </a>
+                <a href="on-campus.html" class="nav-item" id="navOnCampus">
+                    <i class="fas fa-building"></i> <span>On‑Campus</span>
+                </a>
+                <a href="off-campus.html" class="nav-item" id="navOffCampus">
+                    <i class="fas fa-home"></i> <span>Off‑Campus</span>
+                </a>
+                <a href="analytics.html" class="nav-item" data-page="analytics">
+                    <i class="fas fa-chart-pie"></i> <span>Analytics</span>
+                </a>
+                <a href="activity.html" class="nav-item" data-page="activity">
+                    <i class="fas fa-clock"></i> <span>Activity Monitor</span>
+                </a>
+                <div class="nav-divider"></div>
+                <a href="settings.html" class="nav-item" data-page="settings">
+                    <i class="fas fa-cog"></i> <span>Settings</span>
+                </a>
+                <a href="/" class="nav-item logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Top Bar -->
+            <header class="topbar">
+                <div class="page-title">
+                    <h1>Dashboard</h1>
+                    <p id="welcomeMsg">Welcome back, admin!</p>
+                </div>
+                <div class="admin-badge">
+                    <i class="fas fa-user-shield"></i> Administrator
+                </div>
+            </header>
+
+            <!-- ==================== DASHBOARD PAGE ==================== -->
+            <div id="dashboardPage" class="page-content active">
+                <!-- KPI Cards -->
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-icon students"><i class="fas fa-users"></i></div>
+                        <div class="kpi-content">
+                            <span class="kpi-label">TOTAL STUDENTS</span>
+                            <span class="kpi-value" id="totalStudents">0</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon accommodated"><i class="fas fa-bed"></i></div>
+                        <div class="kpi-content">
+                            <span class="kpi-label">ACCOMMODATED</span>
+                            <span class="kpi-value" id="accommodatedCount">0</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon pending"><i class="fas fa-hourglass-half"></i></div>
+                        <div class="kpi-content">
+                            <span class="kpi-label">PENDING APPS</span>
+                            <span class="kpi-value" id="pendingApps">0</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon approved"><i class="fas fa-check-circle"></i></div>
+                        <div class="kpi-content">
+                            <span class="kpi-label">APPROVED APPS</span>
+                            <span class="kpi-value" id="approvedApps">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rooms/Hostels stats & quick actions -->
+                <div class="stats-row">
+                    <div class="stats-panel">
+                        <div class="panel-header">
+                            <h3><i class="fas fa-door-open"></i> Rooms & Hostels</h3>
+                        </div>
+                        <div class="stats-list">
+                            <div class="stat-item">
+                                <span>Total Rooms (On‑Campus)</span>
+                                <span class="stat-badge" id="totalOnCampusRooms">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>Available Rooms (On)</span>
+                                <span class="stat-badge success" id="availableOnCampusRooms">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>Taken Rooms (On)</span>
+                                <span class="stat-badge warn" id="takenOnCampusRooms">0</span>
+                            </div>
+                            <div class="stat-divider"></div>
+                            <div class="stat-item">
+                                <span>Off‑Campus Boarding Houses</span>
+                                <span class="stat-badge" id="totalOffCampusHouses">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>Available Bedspaces (Off)</span>
+                                <span class="stat-badge success" id="availableOffCampusBeds">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>Taken Bedspaces (Off)</span>
+                                <span class="stat-badge warn" id="takenOffCampusBeds">0</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="quick-actions">
+                        <h3>Quick Actions</h3>
+                        <div class="action-buttons">
+                            <button class="btn-secondary" id="quickAddHostelRoom">
+                                <i class="fas fa-plus-circle"></i> Add Room / Hostel
+                            </button>
+                            <button class="btn-outline" id="quickProcessApp">
+                                <i class="fas fa-check-double"></i> Process Applications
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Students Table -->
+                <div class="recent-section">
+                    <div class="section-header">
+                        <h3>Recent Students</h3>
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="student-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Student ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentStudentsBody">
+                                <tr><td colspan="6" style="text-align:center">Loading students...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== STUDENTS PAGE ==================== -->
+            <div id="studentsPage" class="page-content">
+                <div class="info-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-user-graduate"></i> Students Management</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="search-wrapper" style="margin-bottom: 20px; max-width: 400px;">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="studentSearch" placeholder="Search students...">
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="student-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Student ID</th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Program</th>
+                                        <th>Status</th>
+                                        <th>Accommodation</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="allStudentsBody">
+                                    <tr><td colspan="8" style="text-align:center">Loading students...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast" class="toast hidden"></div>
+
+    <!-- Configuration -->
+    <script src="{% static 'js/config.js' %}"></script>
+
+    <!-- Services -->
+    <script src="{% static 'js/services/api.service.js' %}"></script>
+    <script src="{% static 'js/services/auth.service.js' %}"></script>
+    <script src="{% static 'js/services/student.service.js' %}"></script>
+    <script src="{% static 'js/services/accommodation.service.js' %}"></script>
+    <script src="{% static 'js/services/application.service.js' %}"></script>
+
+    <!-- App -->
+    <script src="{% static 'js/app.js' %}"></script>
+
+    <!-- Page-specific JS -->
+    <script src="{% static 'js/admin-dashboard.js' %}"></script>
+</body>
+</html>

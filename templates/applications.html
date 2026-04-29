@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MU • Applications Management</title>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&display=swap" rel="stylesheet">
+    <!-- Styles -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/applications.css' %}">
+</head>
+<body>
+    <div class="app">
+        <!-- Sidebar - Same as admin dashboard -->
+        <aside class="sidebar">
+            <div class="logo-area">
+                <span class="logo-icon"><i class="fas fa-graduation-cap"></i></span>
+                <span class="logo-text">MULUNGUSHI</span>
+                <span class="logo-sub">Accommodation System</span>
+            </div>
+            <nav class="nav">
+                <a href="admin-dashboard.html" class="nav-item">
+                    <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
+                </a>
+                <a href="students.html" class="nav-item">
+                    <i class="fas fa-user-graduate"></i> <span>Students</span>
+                </a>
+                <div class="nav-divider"></div>
+                <div class="nav-section-title">Accommodation</div>
+                <a href="applications.html" class="nav-item active">
+                    <i class="fas fa-file-signature"></i> <span>Applications</span>
+                </a>
+                <a href="on-campus.html" class="nav-item">
+                    <i class="fas fa-building"></i> <span>On‑Campus</span>
+                </a>
+                <a href="off-campus.html" class="nav-item">
+                    <i class="fas fa-home"></i> <span>Off‑Campus</span>
+                </a>
+                <a href="analytics.html" class="nav-item">
+                    <i class="fas fa-chart-pie"></i> <span>Analytics</span>
+                </a>
+                <a href="activity.html" class="nav-item">
+                    <i class="fas fa-clock"></i> <span>Activity Monitor</span>
+                </a>
+                <div class="nav-divider"></div>
+                <a href="settings.html" class="nav-item">
+                    <i class="fas fa-cog"></i> <span>Settings</span>
+                </a>
+                <a href="/" class="nav-item logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Top Bar -->
+            <header class="topbar">
+                <div class="page-title">
+                    <h1>Applications Management</h1>
+                    <p>Manage student accommodation applications</p>
+                </div>
+                <div class="admin-badge">
+                    <i class="fas fa-user-shield"></i> Administrator
+                </div>
+            </header>
+
+            <!-- Summary Cards -->
+            <div class="summary-cards">
+                <div class="summary-card total">
+                    <div class="card-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="card-content">
+                        <span class="card-label">Total Applications</span>
+                        <span class="card-value" id="totalApplications">0</span>
+                    </div>
+                </div>
+                <div class="summary-card pending">
+                    <div class="card-icon">
+                        <i class="fas fa-hourglass-half"></i>
+                    </div>
+                    <div class="card-content">
+                        <span class="card-label">Pending</span>
+                        <span class="card-value" id="pendingApplications">0</span>
+                    </div>
+                </div>
+                <div class="summary-card approved">
+                    <div class="card-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="card-content">
+                        <span class="card-label">Approved</span>
+                        <span class="card-value" id="approvedApplications">0</span>
+                    </div>
+                </div>
+                <div class="summary-card rejected">
+                    <div class="card-icon">
+                        <i class="fas fa-times-circle"></i>
+                    </div>
+                    <div class="card-content">
+                        <span class="card-label">Rejected</span>
+                        <span class="card-value" id="rejectedApplications">0</span>
+                    </div>
+                </div>
+                <div class="summary-card revoked">
+                    <div class="card-icon">
+                        <i class="fas fa-undo-alt"></i>
+                    </div>
+                    <div class="card-content">
+                        <span class="card-label">Revoked</span>
+                        <span class="card-value" id="revokedApplications">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Toolbar -->
+            <div class="applications-toolbar">
+                <div class="filter-tabs">
+                    <button class="filter-tab active" data-filter="all">
+                        <i class="fas fa-list"></i> All
+                    </button>
+                    <button class="filter-tab" data-filter="pending">
+                        <i class="fas fa-hourglass-half"></i> Pending
+                    </button>
+                    <button class="filter-tab" data-filter="approved">
+                        <i class="fas fa-check-circle"></i> Approved
+                    </button>
+                    <button class="filter-tab" data-filter="rejected">
+                        <i class="fas fa-times-circle"></i> Rejected
+                    </button>
+                    <button class="filter-tab" data-filter="revoked">
+                        <i class="fas fa-undo-alt"></i> Revoked
+                    </button>
+                </div>
+                <div class="toolbar-actions">
+                    <div class="search-wrapper">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchApplications" placeholder="Search applications...">
+                    </div>
+                    <button class="btn-outline" id="exportApplicationsBtn">
+                        <i class="fas fa-download"></i> Export CSV
+                    </button>
+                    <button class="btn-primary" id="refreshApplicationsBtn">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Applications Table -->
+            <div class="applications-table-container">
+                <table class="applications-table" id="applicationsTable">
+                    <thead>
+                        <tr>
+                            <th width="5%">
+                                <input type="checkbox" id="selectAllCheckbox">
+                            </th>
+                            <th width="8%">App ID</th>
+                            <th width="10%">Student ID</th>
+                            <th width="15%">Student Name</th>
+                            <th width="15%">Program</th>
+                            <th width="10%">Type</th>
+                            <th width="12%">Applied Date</th>
+                            <th width="10%">Status</th>
+                            <th width="15%">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="applicationsTableBody">
+                        <tr><td colspan="9" style="text-align:center">Loading applications...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination-container">
+                <div class="pagination-info">
+                    Showing <span id="showingStart">0</span> to <span id="showingEnd">0</span> of <span id="totalRecords">0</span> applications
+                </div>
+                <div class="pagination-controls">
+                    <button class="page-btn" id="prevPageBtn" disabled>
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <span class="page-numbers" id="pageNumbers"></span>
+                    <button class="page-btn" id="nextPageBtn" disabled>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Application Detail Modal -->
+    <div id="applicationDetailModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2><i class="fas fa-file-alt"></i> Application Details</h2>
+                <button class="modal-close" onclick="closeApplicationModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="applicationDetailBody">
+                <!-- Dynamic content -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn-outline" onclick="closeApplicationModal()">Close</button>
+                <button class="btn-danger" id="modalRejectBtn" style="display: none;">
+                    <i class="fas fa-times"></i> Reject Application
+                </button>
+                <button class="btn-success" id="modalApproveBtn" style="display: none;">
+                    <i class="fas fa-check"></i> Approve Application
+                </button>
+                <button class="btn-warning" id="modalRevokeBtn" style="display: none;">
+                    <i class="fas fa-undo-alt"></i> Revoke Accommodation
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Revoke Reason Modal -->
+    <div id="revokeReasonModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-exclamation-triangle"></i> Revoke Accommodation</h2>
+                <button class="modal-close" onclick="closeRevokeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to revoke accommodation for <strong id="revokeStudentName"></strong>?</p>
+                <div class="form-group">
+                    <label for="revokeReasonInput">Reason for Revocation <span class="required">*</span></label>
+                    <textarea id="revokeReasonInput" rows="3" placeholder="Please provide a reason for revocation..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-outline" onclick="closeRevokeModal()">Cancel</button>
+                <button class="btn-danger" id="confirmRevokeBtn">
+                    <i class="fas fa-undo-alt"></i> Confirm Revoke
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Action Bar -->
+    <div id="bulkActionBar" class="bulk-action-bar hidden">
+        <div class="bulk-action-content">
+            <span class="bulk-selected-count">
+                <span id="selectedCount">0</span> applications selected
+            </span>
+            <div class="bulk-actions">
+                <button class="btn-outline" id="bulkApproveBtn">
+                    <i class="fas fa-check"></i> Approve Selected
+                </button>
+                <button class="btn-outline" id="bulkRejectBtn">
+                    <i class="fas fa-times"></i> Reject Selected
+                </button>
+                <button class="btn-outline" id="clearSelectionBtn">
+                    <i class="fas fa-times"></i> Clear Selection
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden"></div>
+
+    <!-- Configuration -->
+    <script src="{% static 'js/config.js' %}"></script>
+
+    <!-- Services -->
+    <script src="{% static 'js/services/api.service.js' %}"></script>
+    <script src="{% static 'js/services/auth.service.js' %}"></script>
+    <script src="{% static 'js/services/student.service.js' %}"></script>
+    <script src="{% static 'js/services/accommodation.service.js' %}"></script>
+    <script src="{% static 'js/services/application.service.js' %}"></script>
+
+    <!-- App (with SessionManager and AppDatabase) -->
+    <script src="{% static 'js/app.js' %}"></script>
+
+    <!-- Page-specific JS -->
+    <script src="{% static 'js/applications.js' %}"></script>
+</body>
+</html>

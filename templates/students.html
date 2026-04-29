@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MU • Students Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/student.css' %}">
+</head>
+<body>
+    <div class="app">
+        <aside class="sidebar">
+            <div class="logo-area">
+                <span class="logo-icon"><i class="fas fa-graduation-cap"></i></span>
+                <span class="logo-text">MULUNGUSHI</span>
+                <span class="logo-sub">Accommodation System</span>
+            </div>
+            <nav class="nav">
+                <a href="admin-dashboard.html" class="nav-item">
+                    <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
+                </a>
+                <a href="students.html" class="nav-item active">
+                    <i class="fas fa-user-graduate"></i> <span>Students</span>
+                </a>
+                <div class="nav-divider"></div>
+                <div class="nav-section-title">Accommodation</div>
+                <a href="applications.html" class="nav-item">
+                    <i class="fas fa-file-signature"></i> <span>Applications</span>
+                </a>
+                <a href="on-campus.html" class="nav-item">
+                    <i class="fas fa-building"></i> <span>On‑Campus</span>
+                </a>
+                <a href="off-campus.html" class="nav-item">
+                    <i class="fas fa-home"></i> <span>Off‑Campus</span>
+                </a>
+                <a href="analytics.html" class="nav-item">
+                    <i class="fas fa-chart-pie"></i> <span>Analytics</span>
+                </a>
+                <a href="activity.html" class="nav-item">
+                    <i class="fas fa-clock"></i> <span>Activity Monitor</span>
+                </a>
+                <div class="nav-divider"></div>
+                <a href="settings.html" class="nav-item">
+                    <i class="fas fa-cog"></i> <span>Settings</span>
+                </a>
+                <a href="/" class="nav-item logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main">
+            <header class="topbar">
+                <div class="page-title">
+                    <h1>Students Management</h1>
+                    <p>View and manage all students</p>
+                </div>
+                <div class="admin-badge">
+                    <i class="fas fa-user-shield"></i> Administrator
+                </div>
+            </header>
+
+            <div class="summary-cards">
+                <div class="summary-card total">
+                    <div class="card-icon"><i class="fas fa-users"></i></div>
+                    <div class="card-content">
+                        <span class="card-label">Total Students</span>
+                        <span class="card-value" id="totalStudentsCount">0</span>
+                    </div>
+                </div>
+                <div class="summary-card accommodated">
+                    <div class="card-icon"><i class="fas fa-bed"></i></div>
+                    <div class="card-content">
+                        <span class="card-label">Accommodated</span>
+                        <span class="card-value" id="accommodatedCount">0</span>
+                    </div>
+                </div>
+                <div class="summary-card on-campus">
+                    <div class="card-icon"><i class="fas fa-building"></i></div>
+                    <div class="card-content">
+                        <span class="card-label">On-Campus</span>
+                        <span class="card-value" id="onCampusCount">0</span>
+                    </div>
+                </div>
+                <div class="summary-card off-campus">
+                    <div class="card-icon"><i class="fas fa-home"></i></div>
+                    <div class="card-content">
+                        <span class="card-label">Off-Campus</span>
+                        <span class="card-value" id="offCampusCount">0</span>
+                    </div>
+                </div>
+                <div class="summary-card not-accommodated">
+                    <div class="card-icon"><i class="fas fa-user-minus"></i></div>
+                    <div class="card-content">
+                        <span class="card-label">Not Accommodated</span>
+                        <span class="card-value" id="notAccommodatedCount">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="students-toolbar">
+                <div class="filter-tabs">
+                    <button class="filter-tab active" data-filter="all"><i class="fas fa-users"></i> All Students</button>
+                    <button class="filter-tab" data-filter="accommodated"><i class="fas fa-bed"></i> Accommodated</button>
+                    <button class="filter-tab" data-filter="on-campus"><i class="fas fa-building"></i> On-Campus</button>
+                    <button class="filter-tab" data-filter="off-campus"><i class="fas fa-home"></i> Off-Campus</button>
+                    <button class="filter-tab" data-filter="not-accommodated"><i class="fas fa-user-minus"></i> Not Accommodated</button>
+                </div>
+                <div class="toolbar-actions">
+                    <div class="search-wrapper">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchStudents" placeholder="Search by name, ID, email...">
+                    </div>
+                    <button class="btn-outline" id="exportStudentsBtn"><i class="fas fa-download"></i> Export CSV</button>
+                    <button class="btn-primary" id="refreshStudentsBtn"><i class="fas fa-sync-alt"></i> Refresh</button>
+                </div>
+            </div>
+
+            <div class="students-table-container">
+                <table class="students-table">
+                    <thead>
+                        <tr>
+                            <th width="5%"><input type="checkbox" id="selectAllCheckbox"></th>
+                            <th>Student ID</th>
+                            <th>Student Name</th>
+                            <th>Program</th>
+                            <th>Email</th>
+                            <th>Type</th>
+                            <th>Accommodation Details</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentsTableBody">
+                        <tr><td colspan="9" style="text-align:center">Loading students...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination-container">
+                <div class="pagination-info">Showing <span id="showingStart">0</span> to <span id="showingEnd">0</span> of <span id="totalRecords">0</span> students</div>
+                <div class="pagination-controls">
+                    <button class="page-btn" id="prevPageBtn" disabled><i class="fas fa-chevron-left"></i></button>
+                    <span class="page-numbers" id="pageNumbers"></span>
+                    <button class="page-btn" id="nextPageBtn" disabled><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="{% static 'js/config.js' %}"></script>
+    <script src="{% static 'js/services/api.service.js' %}"></script>
+    <script src="{% static 'js/services/auth.service.js' %}"></script>
+    <script src="{% static 'js/services/student.service.js' %}"></script>
+    <script src="{% static 'js/services/accommodation.service.js' %}"></script>
+    <script src="{% static 'js/services/application.service.js' %}"></script>
+    <script src="{% static 'js/app.js' %}"></script>
+    <script src="{% static 'js/students.js' %}"></script>
+</body>
+</html>

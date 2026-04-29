@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MU • Off-Campus Accommodation</title>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&display=swap" rel="stylesheet">
+    <!-- Styles -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/on-campus.css' %}">
+</head>
+<body>
+    <div class="app">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo-area">
+                <span class="logo-icon"><i class="fas fa-graduation-cap"></i></span>
+                <span class="logo-text">MULUNGUSHI</span>
+                <span class="logo-sub">Accommodation System</span>
+            </div>
+            <nav class="nav">
+                <a href="admin-dashboard.html" class="nav-item">
+                    <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
+                </a>
+                <a href="students.html" class="nav-item">
+                    <i class="fas fa-user-graduate"></i> <span>Students</span>
+                </a>
+                <div class="nav-divider"></div>
+                <div class="nav-section-title">Accommodation</div>
+                <a href="applications.html" class="nav-item">
+                    <i class="fas fa-file-signature"></i> <span>Applications</span>
+                </a>
+                <a href="on-campus.html" class="nav-item">
+                    <i class="fas fa-building"></i> <span>On‑Campus</span>
+                </a>
+                <a href="off-campus.html" class="nav-item active">
+                    <i class="fas fa-home"></i> <span>Off‑Campus</span>
+                </a>
+                <a href="analytics.html" class="nav-item">
+                    <i class="fas fa-chart-pie"></i> <span>Analytics</span>
+                </a>
+                <a href="activity.html" class="nav-item">
+                    <i class="fas fa-clock"></i> <span>Activity Monitor</span>
+                </a>
+                <div class="nav-divider"></div>
+                <a href="settings.html" class="nav-item">
+                    <i class="fas fa-cog"></i> <span>Settings</span>
+                </a>
+                <a href="/" class="nav-item logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Top Bar -->
+            <header class="topbar">
+                <div class="page-title">
+                    <h1>Off-Campus Accommodation</h1>
+                    <p>Manage Boarding Houses</p>
+                </div>
+                <div class="admin-badge">
+                    <i class="fas fa-user-shield"></i> Administrator
+                </div>
+            </header>
+
+            <!-- Add House Button -->
+            <div class="add-hostel-wrapper">
+                <button class="btn-primary" id="addHostelBtn">
+                    <i class="fas fa-plus"></i> Add New Boarding House
+                </button>
+            </div>
+
+            <!-- Boarding Houses Section -->
+            <div id="boardingHousesSection" class="section-content active">
+                <div class="section-header">
+                    <h2><i class="fas fa-home"></i> Boarding Houses</h2>
+                    <span class="hostel-count" id="boardingHousesCount">0 Houses</span>
+                </div>
+                <div class="hostels-grid" id="boardingHousesGrid">
+                    <div style="text-align:center; padding:40px;">Loading boarding houses...</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add/Edit House Modal -->
+    <div id="hostelModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2 id="modalTitle"><i class="fas fa-home"></i> Add Boarding House</h2>
+                <button class="modal-close" onclick="closeHostelModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="hostelForm">
+                    <input type="hidden" id="hostelId">
+                    <input type="hidden" id="hostelSection" value="boardingHouses">
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="hostelName">House Name <span class="required">*</span></label>
+                            <input type="text" id="hostelName" required placeholder="e.g., Sunset Lodge">
+                        </div>
+                        <div class="form-group">
+                            <label for="hostelGender">Gender Policy</label>
+                            <select id="hostelGender">
+                                <option value="mixed">Mixed (All Genders)</option>
+                                <option value="male">Male Only</option>
+                                <option value="female">Female Only</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="hostelAddress">Address <span class="required">*</span></label>
+                            <input type="text" id="hostelAddress" required placeholder="e.g., 12 College Ave, Kabwe">
+                        </div>
+                        <div class="form-group">
+                            <label for="hostelCapacity">Total Capacity</label>
+                            <input type="number" id="hostelCapacity" min="1" value="25">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>House Image</label>
+                        <div id="imageDropzone" class="upload-dropzone">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Drag & drop an image here, or click to browse</p>
+                            <small>PNG, JPG, GIF up to 5MB</small>
+                        </div>
+                        <input type="file" id="hostelImageUpload" accept="image/*" style="display: none;">
+                        <div id="imagePreviewContainer" style="margin-top: 16px; display: none;">
+                            <label>Preview</label>
+                            <div class="image-preview-wrapper">
+                                <img id="imagePreview" src="" alt="Preview" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 12px;">
+                                <button type="button" class="remove-image-btn" onclick="removeSelectedImage()">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <input type="hidden" id="hostelImageData" value="">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="hostelDescription">Description (Optional)</label>
+                        <textarea id="hostelDescription" rows="3" placeholder="Enter house description..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-outline" onclick="closeHostelModal()">Cancel</button>
+                <button class="btn-primary" id="saveHostelBtn">
+                    <i class="fas fa-save"></i> Save Boarding House
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Room Management Modal -->
+    <div id="roomManagementModal" class="modal">
+        <div class="modal-content modal-xlarge">
+            <div class="modal-header">
+                <h2><i class="fas fa-door-open"></i> Manage Rooms - <span id="roomHostelName"></span></h2>
+                <button class="modal-close" onclick="closeRoomModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="rooms-header">
+                    <h3>Rooms List</h3>
+                    <button class="btn-primary" id="addRoomBtn">
+                        <i class="fas fa-plus"></i> Add Room
+                    </button>
+                </div>
+                <div class="rooms-list" id="roomsList">
+                    <div style="text-align:center; padding:40px;">Loading rooms...</div>
+                </div>
+
+                <div class="add-room-form" id="addRoomForm" style="display: none;">
+                    <h4>Add New Room</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Room Number</label>
+                            <input type="text" id="newRoomNumber" placeholder="e.g., Room 1">
+                        </div>
+                        <div class="form-group">
+                            <label>Capacity</label>
+                            <input type="number" id="newRoomCapacity" min="1" value="2">
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn-outline" onclick="hideAddRoomForm()">Cancel</button>
+                        <button class="btn-primary" id="saveRoomBtn">Add Room</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-outline" onclick="closeRoomModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-exclamation-triangle"></i> Confirm Delete</h2>
+                <button class="modal-close" onclick="closeDeleteModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong id="deleteItemName"></strong>?</p>
+                <p class="warning-text">This action cannot be undone. All associated rooms will also be deleted.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-outline" onclick="closeDeleteModal()">Cancel</button>
+                <button class="btn-danger" id="confirmDeleteBtn">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="{% static 'js/config.js' %}"></script>
+    <script src="{% static 'js/services/api.service.js' %}"></script>
+    <script src="{% static 'js/services/auth.service.js' %}"></script>
+    <script src="{% static 'js/services/student.service.js' %}"></script>
+    <script src="{% static 'js/services/accommodation.service.js' %}"></script>
+    <script src="{% static 'js/services/application.service.js' %}"></script>
+    <script src="{% static 'js/app.js' %}"></script>
+    <script src="{% static 'js/off-campus.js' %}"></script>
+</body>
+</html>
