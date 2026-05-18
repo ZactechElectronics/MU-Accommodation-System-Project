@@ -1,327 +1,579 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MU • Student Accommodation Portal</title>
-    <!-- Font Awesome Icons -->
+    <title>MU • Student Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Google Fonts Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&display=swap" rel="stylesheet">
-    <!-- Student CSS -->
-    <link rel="stylesheet" href="css/student-dashboard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f1f5f9; color: #1e293b; }
+
+        .app { display: flex; min-height: 100vh; }
+        .sidebar {
+            width: 280px;
+            background: #0f172a;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+        }
+        .sidebar::-webkit-scrollbar { width: 5px; }
+        .sidebar::-webkit-scrollbar-track { background: #1e293b; }
+        .sidebar::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+
+        .logo-area { padding: 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: center; }
+        .logo-text { font-size: 20px; font-weight: 700; display: block; color: white; }
+        .logo-sub { font-size: 11px; color: #94a3b8; margin-top: 5px; display: block; }
+
+        .student-profile {
+            padding: 20px;
+            margin: 16px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .profile-avatar { width: 50px; height: 50px; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+        .profile-info h4 { font-size: 14px; margin-bottom: 4px; }
+        .profile-info p { font-size: 11px; color: #94a3b8; }
+
+        .nav { flex: 1; padding: 20px 12px; display: flex; flex-direction: column; gap: 4px; }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            color: #cbd5e1;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .nav-item i { width: 22px; }
+        .nav-item:hover { background: rgba(255,255,255,0.1); color: white; }
+        .nav-item.active { background: #3b82f6; color: white; }
+        .nav-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 12px 8px; }
+        .logout-btn { margin-top: auto; color: #f87171; }
+        .logout-btn:hover { background: rgba(248,113,113,0.1); color: #f87171; }
+
+        .main { flex: 1; margin-left: 280px; padding: 24px 32px; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; flex-wrap: wrap; gap: 16px; }
+        .page-title h1 { font-size: 28px; font-weight: 700; color: #0f172a; }
+        .page-title p { color: #64748b; margin-top: 4px; }
+        .student-badge { background: white; padding: 8px 18px; border-radius: 40px; font-weight: 500; color: #3b82f6; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+        .page-content { display: none; }
+        .page-content.active { display: block; }
+
+        .info-card { background: white; border-radius: 20px; padding: 24px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .card-header { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+        .card-header h2 { font-size: 20px; display: flex; align-items: center; gap: 10px; }
+
+        .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .info-item { display: flex; flex-direction: column; gap: 4px; }
+        .info-label { font-size: 12px; color: #64748b; }
+        .info-value { font-size: 16px; font-weight: 600; color: #0f172a; }
+
+        .hostels-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; margin-top: 20px; }
+        .hostel-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+        .hostel-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+        .hostel-image { height: 160px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 48px; overflow: hidden; }
+        .hostel-image img { width: 100%; height: 100%; object-fit: cover; }
+        .hostel-info { padding: 16px; }
+        .hostel-name { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+        .hostel-location { display: inline-block; padding: 4px 10px; background: #e0f2fe; color: #0284c7; border-radius: 20px; font-size: 12px; margin-bottom: 8px; }
+        .hostel-details p { margin: 4px 0; display: flex; align-items: center; gap: 8px; color: #64748b; font-size: 13px; }
+
+        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 30px; font-size: 12px; font-weight: 500; }
+        .status-pending { background: #fef9c3; color: #854d0e; }
+        .status-approved { background: #dcfce7; color: #166534; }
+        .status-rejected { background: #fee2e2; color: #991b1b; }
+        .status-accommodated { background: #dbeafe; color: #1e40af; }
+
+        .btn-primary { background: #3b82f6; color: white; padding: 12px 24px; border: none; border-radius: 40px; font-weight: 600; cursor: pointer; width: 100%; }
+        .btn-primary:hover { background: #2563eb; }
+        .btn-secondary { background: #e2e8f0; color: #1e293b; padding: 10px 20px; border: none; border-radius: 30px; cursor: pointer; }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; }
+        .modal.show { display: flex; }
+        .modal-content { background: white; border-radius: 20px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+        .modal-header { padding: 20px 24px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h2 { font-size: 20px; }
+        .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; }
+        .modal-body { padding: 24px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; }
+        .form-group select, .form-group textarea { width: 100%; padding: 12px 16px; border: 1px solid #e2e8f0; border-radius: 12px; font-family: inherit; }
+        .modal-footer { padding: 16px 24px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 12px; }
+
+        .toast-container { position: fixed; bottom: 30px; right: 30px; z-index: 3000; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background: white; border-radius: 12px; padding: 12px 18px; min-width: 260px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 12px; border-left: 4px solid; }
+        .toast.success { border-left-color: #10b981; }
+        .toast.error { border-left-color: #dc2626; }
+        .toast i { font-size: 18px; }
+        .toast.success i { color: #10b981; }
+        .toast.error i { color: #dc2626; }
+        .toast .message { flex: 1; font-size: 13px; color: #1e293b; }
+        .toast.fade-out { animation: fadeOut 0.3s forwards; }
+        @keyframes fadeOut { to { opacity: 0; transform: translateX(100%); } }
+
+        @media (max-width: 768px) {
+            .sidebar { width: 70px; }
+            .logo-text, .logo-sub, .nav-item span, .student-profile .profile-info { display: none; }
+            .nav-item { justify-content: center; }
+            .main { margin-left: 70px; padding: 16px; }
+            .info-grid { grid-template-columns: 1fr; }
+            .hostels-grid { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 <body>
     <div class="app">
-        <!-- Sidebar -->
         <aside class="sidebar">
-            <div class="logo-area">
-                <span class="logo-icon"><i class="fas fa-graduation-cap"></i></span>
-                <span class="logo-text">MULUNGUSHI</span>
-                <span class="logo-sub">Student Accommodation Portal</span>
-            </div>
-            
-            <!-- Student Profile Summary in Sidebar -->
-            <div class="sidebar-profile" id="sidebarProfile">
-                <div class="profile-avatar">
-                    <i class="fas fa-user-circle"></i>
-                </div>
+            <div class="logo-area"><span class="logo-text">MULUNGUSHI</span><span class="logo-sub">Student Portal</span></div>
+            <div class="student-profile">
+                <div class="profile-avatar"><i class="fas fa-user-graduate"></i></div>
                 <div class="profile-info">
-                    <span class="profile-name" id="sidebarStudentName">Loading...</span>
-                    <span class="profile-program" id="sidebarStudentProgram">Student</span>
+                    <h4 id="studentName">Loading...</h4>
+                    <p id="studentId">ID: ---</p>
                 </div>
             </div>
-            
             <nav class="nav">
-                <a href="#" class="nav-item active" data-page="dashboard">
-                    <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
-                </a>
-                <a href="#" class="nav-item" data-page="apply">
-                    <i class="fas fa-file-signature"></i> <span>Apply for Accommodation</span>
-                </a>
-                <a href="#" class="nav-item" data-page="my-application">
-                    <i class="fas fa-clock"></i> <span>My Application</span>
-                </a>
-                <a href="#" class="nav-item" data-page="available">
-                    <i class="fas fa-search"></i> <span>Available Rooms</span>
-                </a>
+                <a href="#" class="nav-item active" data-page="dashboard"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a>
+                <a href="#" class="nav-item" data-page="hostels"><i class="fas fa-building"></i> <span>Browse Hostels</span></a>
+                <a href="#" class="nav-item" data-page="myapp"><i class="fas fa-clock"></i> <span>My Application</span></a>
                 <div class="nav-divider"></div>
-                <a href="#" class="nav-item" data-page="profile">
-                    <i class="fas fa-user"></i> <span>My Profile</span>
-                </a>
-                <a href="#" class="nav-item" data-page="settings">
-                    <i class="fas fa-cog"></i> <span>Settings</span>
-                </a>
-                <a href="#" class="nav-item logout-btn">
-                    <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
-                </a>
+                <a href="#" class="nav-item logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a>
             </nav>
         </aside>
 
-        <!-- Main Content -->
         <main class="main">
-            <!-- Top Bar -->
             <header class="topbar">
-                <div class="page-title">
-                    <h1 id="pageTitle">Dashboard</h1>
-                    <p id="welcomeMessage">Welcome back!</p>
-                </div>
-                <div class="student-badge" id="studentBadge">
-                    <i class="fas fa-id-card"></i> 
-                    <span id="headerStudentId">STU001</span>
-                </div>
+                <div class="page-title"><h1 id="pageTitle">Dashboard</h1><p id="welcomeMsg">Welcome back!</p></div>
+                <div class="student-badge"><i class="fas fa-id-card"></i> <span id="headerId">---</span></div>
             </header>
 
-            <!-- ==================== DASHBOARD PAGE ==================== -->
+            <!-- Dashboard Page -->
             <div id="dashboardPage" class="page-content active">
-                <!-- Personal Information Card -->
-                <div class="info-card personal-card">
-                    <div class="card-header">
-                        <h2><i class="fas fa-user-graduate"></i> Personal Information</h2>
-                        <span class="verified-badge"><i class="fas fa-check-circle"></i> Verified Student</span>
-                    </div>
-                    <div class="card-body">
-                        <div class="info-grid">
-                            <div class="info-item">
-                                <span class="info-label">Full Name</span>
-                                <span class="info-value" id="studentFullName">-</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Student Number</span>
-                                <span class="info-value" id="studentNumber">-</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Program</span>
-                                <span class="info-value" id="studentProgram">-</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Email</span>
-                                <span class="info-value" id="studentEmail">-</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">NRC Number</span>
-                                <span class="info-value" id="studentNRC">-</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Phone Number</span>
-                                <span class="info-value" id="studentPhone">-</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Year of Study</span>
-                                <span class="info-value" id="studentYear">-</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Enrollment Status</span>
-                                <span class="info-value status-active" id="studentStatus">Active</span>
-                            </div>
-                        </div>
-                    </div>
+                <div class="info-card">
+                    <div class="card-header"><h2><i class="fas fa-user-graduate"></i> Personal Information</h2></div>
+                    <div class="info-grid" id="personalInfo">Loading...</div>
                 </div>
-
-                <!-- Accommodation Status Card -->
-                <div class="info-card accommodation-card">
-                    <div class="card-header">
-                        <h2><i class="fas fa-home"></i> Accommodation Status</h2>
-                    </div>
-                    <div class="card-body" id="accommodationStatusContainer">
-                        <!-- Dynamic content will be injected here -->
-                    </div>
+                <div class="info-card">
+                    <div class="card-header"><h2><i class="fas fa-home"></i> My Application Status</h2></div>
+                    <div id="appStatusCard">Loading...</div>
                 </div>
+            </div>
 
-                <!-- Quick Info Cards -->
-                <div class="quick-info-grid">
-                    <div class="quick-card">
-                        <i class="fas fa-calendar-alt"></i>
-                        <div class="quick-content">
-                            <span class="quick-label">Academic Year</span>
-                            <span class="quick-value">2025-2026</span>
-                        </div>
+            <!-- Browse Hostels Page -->
+            <div id="hostelsPage" class="page-content">
+                <div class="info-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-building"></i> Available Hostels</h2>
+                        <span id="hostelCount" style="color:#64748b; font-size:14px;"></span>
                     </div>
-                    <div class="quick-card">
-                        <i class="fas fa-building"></i>
-                        <div class="quick-content">
-                            <span class="quick-label">Campus</span>
-                            <span class="quick-value" id="studentCampus">Main Campus</span>
-                        </div>
-                    </div>
-                    <div class="quick-card">
-                        <i class="fas fa-clock"></i>
-                        <div class="quick-content">
-                            <span class="quick-label">Application Period</span>
-                            <span class="quick-value status-open">Open</span>
-                        </div>
+                    <div class="hostels-grid" id="hostelsGrid">
+                        <div style="text-align:center; padding:40px;">Loading hostels...</div>
                     </div>
                 </div>
             </div>
 
-            <!-- ==================== APPLY PAGE ==================== -->
-            <div id="applyPage" class="page-content">
+            <!-- My Application Page -->
+            <div id="myappPage" class="page-content">
                 <div class="info-card">
-                    <div class="card-header">
-                        <h2><i class="fas fa-file-signature"></i> Apply for Accommodation</h2>
-                    </div>
-                    <div class="card-body">
-                        <form id="applicationForm">
-                            <div class="form-group">
-                                <label>Accommodation Type</label>
-                                <select id="accommodationType" required>
-                                    <option value="">Select type</option>
-                                    <option value="on-campus">On-Campus</option>
-                                    <option value="off-campus">Off-Campus</option>
-                                </select>
-                            </div>
-                
-                            <!-- On-Campus Options -->
-                            <div id="onCampusOptions" style="display: none;">
-                                <!-- Hostel Selection -->
-                                <div class="form-group">
-                                    <label>Hostel</label>
-                                    <select id="hostelSelect">
-                                        <option value="">Select Hostel</option>
-                                    </select>
-                                </div>
-                    
-                                <!-- Hostel Image Preview -->
-                                <div id="hostelImagePreview" class="image-preview-container" style="display: none;">
-                                    <label>Hostel Image</label>
-                                    <div class="hostel-preview-card">
-                                        <img id="hostelPreviewImg" src="" alt="Hostel Preview" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 12px;">
-                                        <div class="preview-info">
-                                            <span id="hostelPreviewName"></span>
-                                            <span id="hostelPreviewGender" class="gender-badge"></span>
-                                        </div>
-                                    </div>
-                                </div>
-                    
-                                <!-- Room Selection -->
-                                <div class="form-group">
-                                    <label>Room Preference</label>
-                                    <select id="roomSelect">
-                                        <option value="">Select Room</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <!-- Off-Campus Options -->
-                            <div id="offCampusOptions" style="display: none;">
-                                <!-- Boarding House Selection -->
-                                <div class="form-group">
-                                    <label>Boarding House</label>
-                                    <select id="boardingHouseSelect">
-                                        <option value="">Select Boarding House</option>
-                                    </select>
-                                </div>
-                    
-                                <!-- Boarding House Image Preview -->
-                                <div id="boardingHouseImagePreview" class="image-preview-container" style="display: none;">
-                                    <label>Boarding House Image</label>
-                                    <div class="hostel-preview-card">
-                                        <img id="boardingPreviewImg" src="" alt="Boarding House Preview" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 12px;">
-                                        <div class="preview-info">
-                                            <span id="boardingPreviewName"></span>
-                                            <span id="boardingPreviewGender" class="gender-badge"></span>
-                                            <span id="boardingPreviewAddress"></span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                
-                            <div class="form-group">
-                                <label>Additional Notes (Optional)</label>
-                                <textarea id="applicationNotes" rows="3" placeholder="Any special requests or information..."></textarea>
-                            </div>
-                            <button type="submit" class="btn-primary btn-large">
-                                <i class="fas fa-paper-plane"></i> Submit Application
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ==================== MY APPLICATION PAGE ==================== -->
-            <div id="myApplicationPage" class="page-content">
-                <div class="info-card">
-                    <div class="card-header">
-                        <h2><i class="fas fa-clock"></i> My Application Status</h2>
-                    </div>
-                    <div class="card-body" id="applicationStatusContainer">
-                        <!-- Dynamic content -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- ==================== AVAILABLE ROOMS PAGE ==================== -->
-            <div id="availablePage" class="page-content">
-                <div class="info-card">
-                    <div class="card-header">
-                        <h2><i class="fas fa-door-open"></i> Available Accommodation</h2>
-                    </div>
-                    <div class="card-body">
-                        <div class="tab-container">
-                            <button class="tab-btn active" data-tab="on-campus-available">On-Campus</button>
-                            <button class="tab-btn" data-tab="off-campus-available">Off-Campus</button>
-                        </div>
-                        <div id="availableContent" class="available-content">
-                            <!-- Dynamic content with images will be injected here -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ==================== PROFILE PAGE ==================== -->
-            <div id="profilePage" class="page-content">
-                <div class="info-card">
-                    <div class="card-header">
-                        <h2><i class="fas fa-user"></i> My Profile</h2>
-                    </div>
-                    <div class="card-body">
-                        <div class="profile-form">
-                            <div class="form-group">
-                                <label>Phone Number</label>
-                                <input type="tel" id="editPhone" placeholder="Enter phone number">
-                            </div>
-                            <div class="form-group">
-                                <label>Email</label>
-                                <input type="email" id="editEmail" placeholder="Enter email">
-                            </div>
-                            <button class="btn-primary" id="updateProfileBtn">Update Profile</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ==================== SETTINGS PAGE ==================== -->
-            <div id="settingsPage" class="page-content">
-                <div class="info-card">
-                    <div class="card-header">
-                        <h2><i class="fas fa-cog"></i> Settings</h2>
-                    </div>
-                    <div class="card-body">
-                        <p>Notification preferences and account settings.</p>
-                    </div>
+                    <div class="card-header"><h2><i class="fas fa-clock"></i> My Application</h2></div>
+                    <div id="myAppContainer">Loading...</div>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- Toast Container -->
-    <div id="toast" class="toast hidden"></div>
+    <!-- Application Modal -->
+    <div id="applyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-file-signature"></i> Apply for Accommodation</h2>
+                <button class="modal-close" onclick="closeApplyModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="applyHostelId">
+                <div class="form-group">
+                    <label>Hostel</label>
+                    <input type="text" id="applyHostelName" readonly style="background:#f8fafc;">
+                </div>
+                <div class="form-group">
+                    <label>Accommodation Type</label>
+                    <select id="applyType">
+                        <option value="on-campus">On-Campus</option>
+                        <option value="off-campus">Off-Campus</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Special Needs / Requests</label>
+                    <textarea id="applyNotes" rows="3" placeholder="Any special accommodation needs?"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeApplyModal()">Cancel</button>
+                <button class="btn-primary" onclick="submitApplication()">Submit Application</button>
+            </div>
+        </div>
+    </div>
 
-    <!-- Configuration -->
-    <script src="js/config.js"></script>
+    <div id="toastContainer" class="toast-container"></div>
 
-    <!-- Services -->
-    <script src="js/services/api.service.js"></script>
-    <script src="js/services/auth.service.js"></script>
-    <script src="js/services/student.service.js"></script>
-    <script src="js/services/accommodation.service.js"></script>
-    <script src="js/services/application.service.js"></script>
+    <script>
+        let currentStudent = null;
+        let currentApplication = null;
+        let allHostels = [];
 
-    <!-- App (with SessionManager and AppDatabase) -->
-    <script src="js/app.js"></script>
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i><div class="message">${message}</div>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('fade-out');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
 
-    <!-- Page-specific JS -->
-    <script src="js/student-db.js"></script>
-    <script src="js/student-dashboard.js"></script>
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Check if user is logged in and is a student
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/students/');
+                if (!response.ok) {
+                    window.location.href = '/';
+                    return false;
+                }
+
+                // Try to get current user info from session
+                const userResponse = await fetch('/api/users/me/');
+                if (userResponse.ok) {
+                    const userData = await userResponse.json();
+                    if (userData && userData.role === 'student') {
+                        currentStudent = userData;
+                        return true;
+                    }
+                }
+
+                // If we couldn't get user but the page is accessible, try to find student by session
+                // This is a fallback - we'll use the students list to find the current logged in student
+                const studentsResponse = await fetch('/api/students/');
+                const studentsData = await studentsResponse.json();
+
+                if (studentsData.success && studentsData.students && studentsData.students.length > 0) {
+                    // For demo purposes, take the first student
+                    // In production, you'd have a proper session-to-student mapping
+                    currentStudent = studentsData.students[0];
+                    return true;
+                }
+
+                return false;
+            } catch (error) {
+                console.error('Auth check error:', error);
+                return false;
+            }
+        }
+
+        async function initDashboard() {
+            // Check authentication
+            const isAuthenticated = await checkAuth();
+            if (!isAuthenticated) {
+                window.location.href = '/';
+                return;
+            }
+
+            // Update UI with student info
+            if (currentStudent) {
+                const fullName = `${currentStudent.first_name || ''} ${currentStudent.last_name || ''}`.trim() || currentStudent.username;
+                document.getElementById('studentName').innerHTML = fullName;
+                document.getElementById('studentId').innerHTML = `ID: ${currentStudent.student_id || currentStudent.username}`;
+                document.getElementById('headerId').innerHTML = currentStudent.student_id || currentStudent.username;
+                document.getElementById('welcomeMsg').innerHTML = `Welcome, ${currentStudent.first_name || currentStudent.username}!`;
+
+                // Load personal info
+                document.getElementById('personalInfo').innerHTML = `
+                    <div class="info-item"><span class="info-label">Full Name</span><span class="info-value">${fullName}</span></div>
+                    <div class="info-item"><span class="info-label">Student ID</span><span class="info-value">${currentStudent.student_id || 'N/A'}</span></div>
+                    <div class="info-item"><span class="info-label">Email</span><span class="info-value">${currentStudent.email || 'N/A'}</span></div>
+                    <div class="info-item"><span class="info-label">Phone</span><span class="info-value">${currentStudent.phone || 'N/A'}</span></div>
+                    <div class="info-item"><span class="info-label">Program</span><span class="info-value">${currentStudent.program || 'N/A'}</span></div>
+                    <div class="info-item"><span class="info-label">Year of Study</span><span class="info-value">Year ${currentStudent.year_of_study || '1'}</span></div>
+                    <div class="info-item"><span class="info-label">Carry Courses</span><span class="info-value">${currentStudent.has_carry_courses ? '⚠️ Yes' : '✅ No'}</span></div>
+                    <div class="info-item"><span class="info-label">Enrollment Status</span><span class="info-value">${currentStudent.enrollment_status || 'Active'}</span></div>
+                `;
+            }
+
+            await loadApplications();
+        }
+
+        async function loadHostels() {
+            try {
+                const response = await fetch('/api/hostels/');
+                const data = await response.json();
+                if (data.success && data.hostels) {
+                    allHostels = data.hostels;
+                    document.getElementById('hostelCount').innerHTML = `${allHostels.length} Hostels Available`;
+                    const grid = document.getElementById('hostelsGrid');
+
+                    if (allHostels.length === 0) {
+                        grid.innerHTML = '<div style="text-align:center; padding:60px;"><i class="fas fa-building" style="font-size:48px;color:#cbd5e1;"></i><h3>No Hostels Available</h3></div>';
+                        return;
+                    }
+
+                    grid.innerHTML = allHostels.map(h => {
+                        let locationText = '';
+                        if (h.location === 'upschool') locationText = 'Up-School';
+                        else if (h.location === 'downschool') locationText = 'Down-School';
+                        else if (h.location === 'freshers') locationText = 'Freshers Compound';
+                        else locationText = h.location || 'Unknown';
+
+                        let genderText = '';
+                        if (h.gender_policy === 'mixed') genderText = 'Mixed';
+                        else if (h.gender_policy === 'male') genderText = 'Male Only';
+                        else if (h.gender_policy === 'female') genderText = 'Female Only';
+                        else genderText = h.gender_policy || 'Mixed';
+
+                        let available = (h.total_capacity || 0) - (h.current_occupancy || 0);
+                        let imageHtml = h.image ? `<img src="${h.image}" alt="${h.name.replace(/'/g, "\\'")}">` : '<i class="fas fa-building" style="font-size:48px;"></i>';
+
+                        return `
+                        <div class="hostel-card" onclick="openApplyModal(${h.id}, '${h.name.replace(/'/g, "\\'")}')">
+                            <div class="hostel-image">${imageHtml}</div>
+                            <div class="hostel-info">
+                                <div class="hostel-name">${h.name.replace(/'/g, "\\'")}</div>
+                                <span class="hostel-location"><i class="fas fa-map-marker-alt"></i> ${locationText}</span>
+                                <div class="hostel-details">
+                                    <p><i class="fas fa-venus-mars"></i> ${genderText}</p>
+                                    <p><i class="fas fa-bed"></i> Capacity: ${h.total_capacity || 0}</p>
+                                    <p><i class="fas fa-user"></i> Occupied: ${h.current_occupancy || 0}</p>
+                                    <p><i class="fas fa-door-open"></i> Available: ${available}</p>
+                                </div>
+                                <button class="btn-primary" style="margin-top:12px;" onclick="event.stopPropagation(); openApplyModal(${h.id}, '${h.name.replace(/'/g, "\\'")}')">Apply Now</button>
+                            </div>
+                        </div>`;
+                    }).join('');
+                }
+            } catch (error) {
+                console.error('Error loading hostels:', error);
+                showToast('Error loading hostels', 'error');
+            }
+        }
+
+        async function loadApplications() {
+            try {
+                const response = await fetch('/api/applications/');
+                const data = await response.json();
+
+                const statusCard = document.getElementById('appStatusCard');
+                const myAppDiv = document.getElementById('myAppContainer');
+
+                if (data.success && data.applications && currentStudent) {
+                    currentApplication = data.applications.find(a => a.student_id === currentStudent.student_id || a.student_name?.includes(currentStudent.first_name));
+                }
+
+                if (!currentApplication) {
+                    statusCard.innerHTML = `
+                        <div style="text-align:center; padding:20px;">
+                            <i class="fas fa-file-alt" style="font-size:48px;color:#cbd5e1;"></i>
+                            <p style="margin-top:12px;">No application submitted yet.</p>
+                            <button class="btn-primary" style="margin-top:16px; width:auto; padding:10px 24px;" onclick="switchPage('hostels')">Browse Hostels</button>
+                        </div>
+                    `;
+                    myAppDiv.innerHTML = `
+                        <div style="text-align:center; padding:20px;">
+                            <i class="fas fa-file-alt" style="font-size:48px;color:#cbd5e1;"></i>
+                            <p style="margin-top:12px;">You haven't submitted any application yet.</p>
+                            <button class="btn-primary" style="margin-top:16px;" onclick="switchPage('hostels')">Apply Now</button>
+                        </div>
+                    `;
+                } else {
+                    let statusHtml = '';
+                    let appHtml = '';
+
+                    if (currentApplication.status === 'pending') {
+                        statusHtml = `<span class="status-badge status-pending">Pending Review</span><p style="margin-top:12px;">Your application is being reviewed by the accommodation office.</p>`;
+                        appHtml = `
+                            <div class="info-grid">
+                                <div class="info-item"><span class="info-label">Application ID</span><span class="info-value">#${currentApplication.id}</span></div>
+                                <div class="info-item"><span class="info-label">Status</span><span class="info-value"><span class="status-badge status-pending">${currentApplication.status}</span></span></div>
+                                <div class="info-item"><span class="info-label">Type</span><span class="info-value">${currentApplication.type === 'on-campus' ? 'On-Campus' : 'Off-Campus'}</span></div>
+                                <div class="info-item"><span class="info-label">Submitted</span><span class="info-value">${currentApplication.created_at || 'N/A'}</span></div>
+                            </div>
+                            ${currentApplication.notes ? `<p><strong>Notes:</strong> ${currentApplication.notes}</p>` : ''}
+                        `;
+                    } else if (currentApplication.status === 'approved') {
+                        statusHtml = `<span class="status-badge status-approved">Approved</span><p style="margin-top:12px;">Your application has been approved! You will receive an offer shortly.</p>`;
+                        appHtml = `
+                            <div class="info-grid">
+                                <div class="info-item"><span class="info-label">Application ID</span><span class="info-value">#${currentApplication.id}</span></div>
+                                <div class="info-item"><span class="info-label">Status</span><span class="info-value"><span class="status-badge status-approved">${currentApplication.status}</span></span></div>
+                                <div class="info-item"><span class="info-label">Type</span><span class="info-value">${currentApplication.type === 'on-campus' ? 'On-Campus' : 'Off-Campus'}</span></div>
+                                <div class="info-item"><span class="info-label">Submitted</span><span class="info-value">${currentApplication.created_at || 'N/A'}</span></div>
+                            </div>
+                            <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:16px; padding:20px; margin-top:16px;">
+                                <p><strong>🎉 Congratulations! Your application has been approved.</strong></p>
+                                <p>Please wait for the accommodation offer. You will be notified when a room is allocated.</p>
+                            </div>
+                        `;
+                    } else if (currentApplication.status === 'rejected') {
+                        statusHtml = `<span class="status-badge status-rejected">Rejected</span><p style="margin-top:12px;">Your application was not approved at this time.</p>`;
+                        appHtml = `
+                            <div class="info-grid">
+                                <div class="info-item"><span class="info-label">Application ID</span><span class="info-value">#${currentApplication.id}</span></div>
+                                <div class="info-item"><span class="info-label">Status</span><span class="info-value"><span class="status-badge status-rejected">${currentApplication.status}</span></span></div>
+                                <div class="info-item"><span class="info-label">Type</span><span class="info-value">${currentApplication.type === 'on-campus' ? 'On-Campus' : 'Off-Campus'}</span></div>
+                            </div>
+                            ${currentApplication.rejection_reason ? `<p><strong>Reason:</strong> ${currentApplication.rejection_reason}</p>` : ''}
+                        `;
+                    } else if (currentApplication.status === 'accommodated') {
+                        statusHtml = `<span class="status-badge status-accommodated">Accommodated</span><p style="margin-top:12px;">You have been successfully allocated accommodation!</p>`;
+                        appHtml = `
+                            <div class="info-grid">
+                                <div class="info-item"><span class="info-label">Application ID</span><span class="info-value">#${currentApplication.id}</span></div>
+                                <div class="info-item"><span class="info-label">Status</span><span class="info-value"><span class="status-badge status-accommodated">${currentApplication.status}</span></span></div>
+                                <div class="info-item"><span class="info-label">Type</span><span class="info-value">${currentApplication.type === 'on-campus' ? 'On-Campus' : 'Off-Campus'}</span></div>
+                            </div>
+                            <p style="color:#16a34a; margin-top:12px;"><i class="fas fa-check-circle"></i> Congratulations! Your accommodation has been confirmed.</p>
+                        `;
+                    }
+
+                    statusCard.innerHTML = statusHtml;
+                    myAppDiv.innerHTML = appHtml;
+                }
+            } catch (error) {
+                console.error('Error loading applications:', error);
+            }
+        }
+
+        function openApplyModal(hostelId, hostelName) {
+            if (currentApplication && ['pending', 'approved', 'accommodated'].includes(currentApplication.status)) {
+                showToast('You already have an active application', 'error');
+                return;
+            }
+            document.getElementById('applyHostelId').value = hostelId;
+            document.getElementById('applyHostelName').value = hostelName;
+            document.getElementById('applyType').value = 'on-campus';
+            document.getElementById('applyNotes').value = '';
+            document.getElementById('applyModal').classList.add('show');
+        }
+
+        function closeApplyModal() {
+            document.getElementById('applyModal').classList.remove('show');
+        }
+
+        async function submitApplication() {
+            const hostelId = document.getElementById('applyHostelId').value;
+            const type = document.getElementById('applyType').value;
+            const notes = document.getElementById('applyNotes').value;
+
+            try {
+                const response = await fetch('/api/applications/create/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        type: type,
+                        notes: notes,
+                        student_id: currentStudent.id,
+                        preferred_hostel_id: parseInt(hostelId)
+                    })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showToast('Application submitted successfully!', 'success');
+                    closeApplyModal();
+                    await loadApplications();
+                    switchPage('myapp');
+                } else {
+                    showToast(data.message || 'Submission failed', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Error submitting application', 'error');
+            }
+        }
+
+        function switchPage(page) {
+            document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+            document.getElementById(`${page}Page`).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.querySelector(`.nav-item[data-page="${page}"]`).classList.add('active');
+
+            const titles = { dashboard: 'Dashboard', hostels: 'Browse Hostels', myapp: 'My Application' };
+            document.getElementById('pageTitle').innerHTML = titles[page] || 'Dashboard';
+
+            if (page === 'hostels') loadHostels();
+            if (page === 'myapp') loadApplications();
+        }
+
+        function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                fetch('/api/auth/logout/', {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': getCookie('csrftoken') }
+                }).then(() => {
+                    window.location.href = '/';
+                }).catch(() => {
+                    window.location.href = '/';
+                });
+            }
+        }
+
+        // Navigation
+        document.querySelectorAll('.nav-item[data-page]').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                switchPage(item.dataset.page);
+            });
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            handleLogout();
+        });
+
+        // Close modal on outside click
+        window.onclick = function(event) {
+            const modal = document.getElementById('applyModal');
+            if (event.target === modal) closeApplyModal();
+        };
+
+        // Initialize
+        initDashboard();
+    </script>
 </body>
 </html>

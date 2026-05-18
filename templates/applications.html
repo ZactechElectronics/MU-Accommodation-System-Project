@@ -5,20 +5,89 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MU • Applications Management</title>
-    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Google Fonts Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&display=swap" rel="stylesheet">
-    <!-- Styles -->
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <link rel="stylesheet" href="{% static 'css/applications.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f1f5f9; color: #1e293b; }
+
+        .app { display: flex; min-height: 100vh; }
+        .sidebar {
+            width: 280px;
+            background: #0f172a;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+        }
+        .sidebar::-webkit-scrollbar { width: 5px; }
+        .sidebar::-webkit-scrollbar-track { background: #1e293b; }
+        .sidebar::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+        .logo-area { padding: 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: center; }
+        .logo-text { font-size: 20px; font-weight: 700; display: block; color: white; }
+        .logo-sub { font-size: 11px; color: #94a3b8; margin-top: 5px; display: block; }
+        .nav { flex: 1; padding: 20px 12px; display: flex; flex-direction: column; gap: 4px; }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            color: #cbd5e1;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .nav-item i { width: 22px; font-size: 18px; }
+        .nav-item:hover { background: rgba(255,255,255,0.1); color: white; }
+        .nav-item.active { background: #3b82f6; color: white; }
+        .nav-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 12px 8px; }
+        .nav-section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #64748b; padding: 12px 16px 4px; }
+        .logout-btn { margin-top: auto; color: #f87171; }
+        .logout-btn:hover { background: rgba(248,113,113,0.1); color: #f87171; }
+
+        .main { flex: 1; margin-left: 280px; padding: 24px 32px; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; flex-wrap: wrap; gap: 16px; }
+        .page-title h1 { font-size: 28px; font-weight: 700; color: #0f172a; }
+        .page-title p { color: #64748b; margin-top: 4px; }
+        .admin-badge { background: white; padding: 8px 18px; border-radius: 40px; font-weight: 500; color: #3b82f6; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+        .info-card { background: white; border-radius: 20px; padding: 24px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .card-header { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #e2e8f0; }
+        .card-header h2 { font-size: 20px; display: flex; align-items: center; gap: 10px; }
+
+        .filter-tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .filter-tab { padding: 8px 20px; border: none; background: #f1f5f9; border-radius: 30px; cursor: pointer; font-weight: 500; }
+        .filter-tab.active { background: #3b82f6; color: white; }
+
+        .table-wrapper { overflow-x: auto; }
+        .applications-table { width: 100%; border-collapse: collapse; }
+        .applications-table th, .applications-table td { padding: 12px 8px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        .applications-table th { color: #64748b; font-weight: 600; font-size: 13px; }
+
+        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 30px; font-size: 12px; font-weight: 500; }
+        .status-badge.pending { background: #fef9c3; color: #854d0e; }
+        .status-badge.approved { background: #dcfce7; color: #166534; }
+        .status-badge.rejected { background: #fee2e2; color: #991b1b; }
+        .status-badge.revoked { background: #fed7aa; color: #9a3412; }
+
+        .action-btn { background: none; border: none; padding: 6px 10px; border-radius: 8px; cursor: pointer; margin: 0 2px; }
+        .action-btn.approve { background: #dcfce7; color: #16a34a; }
+        .action-btn.reject { background: #fee2e2; color: #dc2626; }
+
+        .toast { position: fixed; bottom: 30px; right: 30px; padding: 14px 24px; background: #1e293b; color: white; border-radius: 40px; z-index: 1000; transition: 0.3s; }
+        .toast.hidden { opacity: 0; visibility: hidden; transform: translateY(10px); }
+
+        @media (max-width: 1024px) { .sidebar { width: 240px; } .main { margin-left: 240px; } }
+        @media (max-width: 768px) { .sidebar { width: 70px; } .logo-text, .logo-sub, .nav-item span, .nav-section-title { display: none; } .nav-item { justify-content: center; padding: 12px; } .main { margin-left: 70px; padding: 16px; } }
+    </style>
 </head>
 <body>
     <div class="app">
-        <!-- Sidebar - Same as admin dashboard -->
         <aside class="sidebar">
             <div class="logo-area">
-                <span class="logo-icon"><i class="fas fa-graduation-cap"></i></span>
                 <span class="logo-text">MULUNGUSHI</span>
                 <span class="logo-sub">Accommodation System</span>
             </div>
@@ -43,241 +112,145 @@
                 <a href="analytics.html" class="nav-item">
                     <i class="fas fa-chart-pie"></i> <span>Analytics</span>
                 </a>
-                <a href="activity.html" class="nav-item">
-                    <i class="fas fa-clock"></i> <span>Activity Monitor</span>
-                </a>
                 <div class="nav-divider"></div>
-                <a href="settings.html" class="nav-item">
-                    <i class="fas fa-cog"></i> <span>Settings</span>
-                </a>
-                <a href="/" class="nav-item logout-btn">
+                <a href="/" class="nav-item logout-btn" id="logoutBtn">
                     <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
                 </a>
             </nav>
         </aside>
 
-        <!-- Main Content -->
         <main class="main">
-            <!-- Top Bar -->
             <header class="topbar">
                 <div class="page-title">
                     <h1>Applications Management</h1>
                     <p>Manage student accommodation applications</p>
                 </div>
-                <div class="admin-badge">
-                    <i class="fas fa-user-shield"></i> Administrator
-                </div>
+                <div class="admin-badge"><i class="fas fa-user-shield"></i> Administrator</div>
             </header>
 
-            <!-- Summary Cards -->
-            <div class="summary-cards">
-                <div class="summary-card total">
-                    <div class="card-icon">
-                        <i class="fas fa-file-alt"></i>
-                    </div>
-                    <div class="card-content">
-                        <span class="card-label">Total Applications</span>
-                        <span class="card-value" id="totalApplications">0</span>
-                    </div>
+            <div class="info-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-file-alt"></i> All Applications</h2>
                 </div>
-                <div class="summary-card pending">
-                    <div class="card-icon">
-                        <i class="fas fa-hourglass-half"></i>
-                    </div>
-                    <div class="card-content">
-                        <span class="card-label">Pending</span>
-                        <span class="card-value" id="pendingApplications">0</span>
-                    </div>
-                </div>
-                <div class="summary-card approved">
-                    <div class="card-icon">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                    <div class="card-content">
-                        <span class="card-label">Approved</span>
-                        <span class="card-value" id="approvedApplications">0</span>
-                    </div>
-                </div>
-                <div class="summary-card rejected">
-                    <div class="card-icon">
-                        <i class="fas fa-times-circle"></i>
-                    </div>
-                    <div class="card-content">
-                        <span class="card-label">Rejected</span>
-                        <span class="card-value" id="rejectedApplications">0</span>
-                    </div>
-                </div>
-                <div class="summary-card revoked">
-                    <div class="card-icon">
-                        <i class="fas fa-undo-alt"></i>
-                    </div>
-                    <div class="card-content">
-                        <span class="card-label">Revoked</span>
-                        <span class="card-value" id="revokedApplications">0</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Toolbar -->
-            <div class="applications-toolbar">
                 <div class="filter-tabs">
-                    <button class="filter-tab active" data-filter="all">
-                        <i class="fas fa-list"></i> All
-                    </button>
-                    <button class="filter-tab" data-filter="pending">
-                        <i class="fas fa-hourglass-half"></i> Pending
-                    </button>
-                    <button class="filter-tab" data-filter="approved">
-                        <i class="fas fa-check-circle"></i> Approved
-                    </button>
-                    <button class="filter-tab" data-filter="rejected">
-                        <i class="fas fa-times-circle"></i> Rejected
-                    </button>
-                    <button class="filter-tab" data-filter="revoked">
-                        <i class="fas fa-undo-alt"></i> Revoked
-                    </button>
+                    <button class="filter-tab active" data-filter="all">All</button>
+                    <button class="filter-tab" data-filter="pending">Pending</button>
+                    <button class="filter-tab" data-filter="approved">Approved</button>
+                    <button class="filter-tab" data-filter="rejected">Rejected</button>
                 </div>
-                <div class="toolbar-actions">
-                    <div class="search-wrapper">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="searchApplications" placeholder="Search applications...">
-                    </div>
-                    <button class="btn-outline" id="exportApplicationsBtn">
-                        <i class="fas fa-download"></i> Export CSV
-                    </button>
-                    <button class="btn-primary" id="refreshApplicationsBtn">
-                        <i class="fas fa-sync-alt"></i> Refresh
-                    </button>
-                </div>
-            </div>
-
-            <!-- Applications Table -->
-            <div class="applications-table-container">
-                <table class="applications-table" id="applicationsTable">
-                    <thead>
-                        <tr>
-                            <th width="5%">
-                                <input type="checkbox" id="selectAllCheckbox">
-                            </th>
-                            <th width="8%">App ID</th>
-                            <th width="10%">Student ID</th>
-                            <th width="15%">Student Name</th>
-                            <th width="15%">Program</th>
-                            <th width="10%">Type</th>
-                            <th width="12%">Applied Date</th>
-                            <th width="10%">Status</th>
-                            <th width="15%">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="applicationsTableBody">
-                        <tr><td colspan="9" style="text-align:center">Loading applications...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Pagination -->
-            <div class="pagination-container">
-                <div class="pagination-info">
-                    Showing <span id="showingStart">0</span> to <span id="showingEnd">0</span> of <span id="totalRecords">0</span> applications
-                </div>
-                <div class="pagination-controls">
-                    <button class="page-btn" id="prevPageBtn" disabled>
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <span class="page-numbers" id="pageNumbers"></span>
-                    <button class="page-btn" id="nextPageBtn" disabled>
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
+                <div class="table-wrapper">
+                    <table class="applications-table">
+                        <thead>
+                            <tr><th>ID</th><th>Student</th><th>Type</th><th>Status</th><th>Submitted</th><th>Actions</th></tr>
+                        </thead>
+                        <tbody id="applicationsTableBody"><tr><td colspan="6">Loading...</td></tr></tbody>
+                    </table>
                 </div>
             </div>
         </main>
     </div>
-
-    <!-- Application Detail Modal -->
-    <div id="applicationDetailModal" class="modal">
-        <div class="modal-content modal-large">
-            <div class="modal-header">
-                <h2><i class="fas fa-file-alt"></i> Application Details</h2>
-                <button class="modal-close" onclick="closeApplicationModal()">&times;</button>
-            </div>
-            <div class="modal-body" id="applicationDetailBody">
-                <!-- Dynamic content -->
-            </div>
-            <div class="modal-footer">
-                <button class="btn-outline" onclick="closeApplicationModal()">Close</button>
-                <button class="btn-danger" id="modalRejectBtn" style="display: none;">
-                    <i class="fas fa-times"></i> Reject Application
-                </button>
-                <button class="btn-success" id="modalApproveBtn" style="display: none;">
-                    <i class="fas fa-check"></i> Approve Application
-                </button>
-                <button class="btn-warning" id="modalRevokeBtn" style="display: none;">
-                    <i class="fas fa-undo-alt"></i> Revoke Accommodation
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Revoke Reason Modal -->
-    <div id="revokeReasonModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2><i class="fas fa-exclamation-triangle"></i> Revoke Accommodation</h2>
-                <button class="modal-close" onclick="closeRevokeModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to revoke accommodation for <strong id="revokeStudentName"></strong>?</p>
-                <div class="form-group">
-                    <label for="revokeReasonInput">Reason for Revocation <span class="required">*</span></label>
-                    <textarea id="revokeReasonInput" rows="3" placeholder="Please provide a reason for revocation..."></textarea>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-outline" onclick="closeRevokeModal()">Cancel</button>
-                <button class="btn-danger" id="confirmRevokeBtn">
-                    <i class="fas fa-undo-alt"></i> Confirm Revoke
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Bulk Action Bar -->
-    <div id="bulkActionBar" class="bulk-action-bar hidden">
-        <div class="bulk-action-content">
-            <span class="bulk-selected-count">
-                <span id="selectedCount">0</span> applications selected
-            </span>
-            <div class="bulk-actions">
-                <button class="btn-outline" id="bulkApproveBtn">
-                    <i class="fas fa-check"></i> Approve Selected
-                </button>
-                <button class="btn-outline" id="bulkRejectBtn">
-                    <i class="fas fa-times"></i> Reject Selected
-                </button>
-                <button class="btn-outline" id="clearSelectionBtn">
-                    <i class="fas fa-times"></i> Clear Selection
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Toast Notification -->
     <div id="toast" class="toast hidden"></div>
 
-    <!-- Configuration -->
-    <script src="{% static 'js/config.js' %}"></script>
+    <script>
+        let allApplications = [];
+        let currentFilter = 'all';
 
-    <!-- Services -->
-    <script src="{% static 'js/services/api.service.js' %}"></script>
-    <script src="{% static 'js/services/auth.service.js' %}"></script>
-    <script src="{% static 'js/services/student.service.js' %}"></script>
-    <script src="{% static 'js/services/accommodation.service.js' %}"></script>
-    <script src="{% static 'js/services/application.service.js' %}"></script>
+        function showToast(msg, type='success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.className = `toast ${type}`;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3000);
+        }
 
-    <!-- App (with SessionManager and AppDatabase) -->
-    <script src="{% static 'js/app.js' %}"></script>
+        async function loadApplications() {
+            try {
+                const response = await fetch('/api/applications/');
+                const data = await response.json();
+                if (data.success) {
+                    allApplications = data.applications;
+                    renderApplications();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
 
-    <!-- Page-specific JS -->
-    <script src="{% static 'js/applications.js' %}"></script>
+        function renderApplications() {
+            let filtered = allApplications;
+            if (currentFilter !== 'all') {
+                filtered = allApplications.filter(a => a.status === currentFilter);
+            }
+
+            const tbody = document.getElementById('applicationsTableBody');
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6">No applications found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(app => `
+                <tr>
+                    <td>${app.id}</td>
+                    <td>${app.student_name || 'Unknown'}<br><small>${app.student_id || ''}</small></td>
+                    <td>${app.type === 'on-campus' ? '🏠 On-Campus' : '🏡 Off-Campus'}</td>
+                    <td><span class="status-badge ${app.status}">${app.status}</span></td>
+                    <td>${app.created_at || 'N/A'}</td>
+                    <td>
+                        ${app.status === 'pending' ? `
+                            <button class="action-btn approve" onclick="approveApp(${app.id})">✓ Approve</button>
+                            <button class="action-btn reject" onclick="rejectApp(${app.id})">✗ Reject</button>
+                        ` : ''}
+                        ${app.status === 'approved' ? `<button class="action-btn" onclick="revokeApp(${app.id})">↺ Revoke</button>` : ''}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function approveApp(id) {
+            if (!confirm('Approve this application?')) return;
+            const response = await fetch(`/api/applications/${id}/approve/`, { method: 'POST' });
+            const data = await response.json();
+            if (data.success) {
+                showToast('Application approved!');
+                loadApplications();
+            }
+        }
+
+        async function rejectApp(id) {
+            if (!confirm('Reject this application?')) return;
+            const response = await fetch(`/api/applications/${id}/reject/`, { method: 'POST' });
+            const data = await response.json();
+            if (data.success) {
+                showToast('Application rejected!');
+                loadApplications();
+            }
+        }
+
+        async function revokeApp(id) {
+            if (!confirm('Revoke this accommodation?')) return;
+            const response = await fetch(`/api/applications/${id}/revoke/`, { method: 'POST' });
+            const data = await response.json();
+            if (data.success) {
+                showToast('Accommodation revoked!');
+                loadApplications();
+            }
+        }
+
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentFilter = tab.dataset.filter;
+                renderApplications();
+            });
+        });
+
+        document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            if(confirm('Logout?')) fetch('/api/auth/logout/', {method:'POST'}).then(()=>window.location.href='/');
+        });
+
+        loadApplications();
+    </script>
 </body>
 </html>

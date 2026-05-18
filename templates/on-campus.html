@@ -5,306 +5,548 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MU • On-Campus Accommodation</title>
-    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Google Fonts Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&display=swap" rel="stylesheet">
-    <!-- Styles -->
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <link rel="stylesheet" href="{% static 'css/on-campus.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f1f5f9; color: #1e293b; }
+
+        .app { display: flex; min-height: 100vh; }
+        .sidebar {
+            width: 280px;
+            background: #0f172a;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+        }
+        .sidebar::-webkit-scrollbar { width: 5px; }
+        .sidebar::-webkit-scrollbar-track { background: #1e293b; }
+        .sidebar::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+        .logo-area { padding: 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: center; }
+        .logo-text { font-size: 20px; font-weight: 700; display: block; color: white; }
+        .logo-sub { font-size: 11px; color: #94a3b8; margin-top: 5px; display: block; }
+        .nav { flex: 1; padding: 20px 12px; display: flex; flex-direction: column; gap: 4px; }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            color: #cbd5e1;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .nav-item i { width: 22px; font-size: 18px; }
+        .nav-item:hover { background: rgba(255,255,255,0.1); color: white; }
+        .nav-item.active { background: #3b82f6; color: white; }
+        .nav-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 12px 8px; }
+        .nav-section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #64748b; padding: 12px 16px 4px; }
+        .logout-btn { margin-top: auto; color: #f87171; }
+        .logout-btn:hover { background: rgba(248,113,113,0.1); color: #f87171; }
+
+        .main { flex: 1; margin-left: 280px; padding: 24px 32px; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; flex-wrap: wrap; gap: 16px; }
+        .page-title h1 { font-size: 28px; font-weight: 700; color: #0f172a; }
+        .page-title p { color: #64748b; margin-top: 4px; }
+        .admin-badge { background: white; padding: 8px 18px; border-radius: 40px; font-weight: 500; color: #3b82f6; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+        .add-btn { background: #3b82f6; color: white; padding: 12px 24px; border: none; border-radius: 40px; font-weight: 600; cursor: pointer; margin-bottom: 24px; float: right; }
+        .add-btn:hover { background: #2563eb; }
+        .clearfix::after { content: ""; clear: both; display: table; }
+
+        .hostels-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; margin-top: 20px; }
+        .hostel-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: transform 0.2s; }
+        .hostel-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+        .hostel-image { height: 160px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 48px; overflow: hidden; }
+        .hostel-image img { width: 100%; height: 100%; object-fit: cover; }
+        .hostel-info { padding: 16px; }
+        .hostel-name { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+        .hostel-location { display: inline-block; padding: 4px 10px; background: #e0f2fe; color: #0284c7; border-radius: 20px; font-size: 12px; margin-bottom: 12px; }
+        .hostel-details { color: #64748b; font-size: 13px; margin-bottom: 12px; }
+        .hostel-details p { margin: 4px 0; }
+        .hostel-actions { display: flex; gap: 8px; padding-top: 12px; border-top: 1px solid #e2e8f0; }
+        .hostel-actions button { flex: 1; padding: 8px; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; }
+        .edit-btn { background: #e0f2fe; color: #0284c7; }
+        .delete-btn { background: #fee2e2; color: #dc2626; }
+        .edit-btn:hover { background: #bae6fd; }
+        .delete-btn:hover { background: #fecaca; }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; }
+        .modal.show { display: flex; }
+        .modal-content { background: white; border-radius: 20px; width: 90%; max-width: 550px; max-height: 90vh; overflow-y: auto; }
+        .modal-header { padding: 20px 24px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h2 { font-size: 20px; }
+        .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #94a3b8; }
+        .modal-close:hover { color: #dc2626; }
+        .modal-body { padding: 24px; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: 500; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 12px; font-family: inherit; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #3b82f6; }
+        .form-group input[type="file"] { padding: 8px; border: 1px dashed #cbd5e1; background: #f8fafc; cursor: pointer; }
+        .image-preview { margin-top: 10px; max-width: 200px; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; }
+        .image-preview img { width: 100%; height: auto; display: block; }
+        .modal-footer { padding: 16px 24px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 12px; }
+        .btn-save { background: #3b82f6; color: white; padding: 10px 20px; border: none; border-radius: 30px; cursor: pointer; font-weight: 600; }
+        .btn-save:hover { background: #2563eb; }
+        .btn-cancel { background: #e2e8f0; color: #1e293b; padding: 10px 20px; border: none; border-radius: 30px; cursor: pointer; font-weight: 600; }
+        .btn-cancel:hover { background: #cbd5e1; }
+
+        .confirm-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        .confirm-modal.show { display: flex; }
+        .confirm-card {
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        .confirm-header { padding: 24px; text-align: center; background: #fef2f2; }
+        .confirm-header i { font-size: 48px; color: #dc2626; margin-bottom: 12px; }
+        .confirm-header h3 { font-size: 20px; color: #991b1b; }
+        .confirm-body { padding: 24px; text-align: center; }
+        .confirm-body p { color: #475569; margin-bottom: 8px; }
+        .confirm-body .warning-text { color: #dc2626; font-size: 13px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #e2e8f0; }
+        .confirm-footer { padding: 16px 24px 24px; display: flex; justify-content: center; gap: 16px; }
+        .confirm-btn-danger { background: #dc2626; color: white; padding: 10px 28px; border: none; border-radius: 40px; cursor: pointer; font-weight: 600; }
+        .confirm-btn-danger:hover { background: #b91c1c; }
+        .confirm-btn-secondary { background: #e2e8f0; color: #1e293b; padding: 10px 28px; border: none; border-radius: 40px; cursor: pointer; font-weight: 600; }
+        .confirm-btn-secondary:hover { background: #cbd5e1; }
+
+        .toast-container { position: fixed; bottom: 30px; right: 30px; z-index: 3000; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background: white; border-radius: 12px; padding: 12px 18px; min-width: 260px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 12px; border-left: 4px solid; }
+        .toast.success { border-left-color: #10b981; }
+        .toast.error { border-left-color: #dc2626; }
+        .toast i { font-size: 18px; }
+        .toast.success i { color: #10b981; }
+        .toast.error i { color: #dc2626; }
+        .toast .message { flex: 1; font-size: 13px; color: #1e293b; }
+        .toast.fade-out { animation: fadeOut 0.3s forwards; }
+        @keyframes fadeOut { to { opacity: 0; transform: translateX(100%); } }
+
+        @media (max-width: 768px) {
+            .sidebar { width: 70px; }
+            .logo-text, .logo-sub, .nav-item span, .nav-section-title { display: none; }
+            .nav-item { justify-content: center; }
+            .main { margin-left: 70px; padding: 16px; }
+            .hostels-grid { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 <body>
     <div class="app">
-        <!-- Sidebar -->
         <aside class="sidebar">
-            <div class="logo-area">
-                <span class="logo-icon"><i class="fas fa-graduation-cap"></i></span>
-                <span class="logo-text">MULUNGUSHI</span>
-                <span class="logo-sub">Accommodation System</span>
-            </div>
+            <div class="logo-area"><span class="logo-text">MULUNGUSHI</span><span class="logo-sub">Accommodation System</span></div>
             <nav class="nav">
-                <a href="admin-dashboard.html" class="nav-item">
-                    <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
-                </a>
-                <a href="students.html" class="nav-item">
-                    <i class="fas fa-user-graduate"></i> <span>Students</span>
-                </a>
+                <a href="admin-dashboard.html" class="nav-item"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a>
+                <a href="students.html" class="nav-item"><i class="fas fa-user-graduate"></i> <span>Students</span></a>
                 <div class="nav-divider"></div>
                 <div class="nav-section-title">Accommodation</div>
-                <a href="applications.html" class="nav-item">
-                    <i class="fas fa-file-signature"></i> <span>Applications</span>
-                </a>
-                <a href="on-campus.html" class="nav-item active">
-                    <i class="fas fa-building"></i> <span>On‑Campus</span>
-                </a>
-                <a href="off-campus.html" class="nav-item">
-                    <i class="fas fa-home"></i> <span>Off‑Campus</span>
-                </a>
-                <a href="analytics.html" class="nav-item">
-                    <i class="fas fa-chart-pie"></i> <span>Analytics</span>
-                </a>
-                <a href="activity.html" class="nav-item">
-                    <i class="fas fa-clock"></i> <span>Activity Monitor</span>
-                </a>
+                <a href="applications.html" class="nav-item"><i class="fas fa-file-signature"></i> <span>Applications</span></a>
+                <a href="on-campus.html" class="nav-item active"><i class="fas fa-building"></i> <span>On‑Campus</span></a>
+                <a href="off-campus.html" class="nav-item"><i class="fas fa-home"></i> <span>Off‑Campus</span></a>
+                <a href="analytics.html" class="nav-item"><i class="fas fa-chart-pie"></i> <span>Analytics</span></a>
                 <div class="nav-divider"></div>
-                <a href="settings.html" class="nav-item">
-                    <i class="fas fa-cog"></i> <span>Settings</span>
-                </a>
-                <a href="/" class="nav-item logout-btn">
-                    <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
-                </a>
+                <a href="/" class="nav-item logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a>
             </nav>
         </aside>
 
-        <!-- Main Content -->
         <main class="main">
-            <!-- Top Bar -->
             <header class="topbar">
-                <div class="page-title">
-                    <h1>On-Campus Accommodation</h1>
-                    <p>Manage hostels, rooms, and sabbatical houses</p>
-                </div>
-                <div class="admin-badge">
-                    <i class="fas fa-user-shield"></i> Administrator
-                </div>
+                <div class="page-title"><h1>On-Campus Accommodation</h1><p>Manage hostels with images</p></div>
+                <div class="admin-badge"><i class="fas fa-building"></i> Administrator</div>
             </header>
 
-            <!-- Section Tabs -->
-            <div class="section-tabs">
-                <button class="section-tab active" data-section="upschool">
-                    <i class="fas fa-arrow-up"></i> Up-School
-                </button>
-                <button class="section-tab" data-section="downschool">
-                    <i class="fas fa-arrow-down"></i> Down-School
-                </button>
-                <button class="section-tab" data-section="freshers">
-                    <i class="fas fa-users"></i> Freshers Compound
-                </button>
-                <button class="section-tab" data-section="sabbaticals">
-                    <i class="fas fa-home"></i> Sabbaticals
-                </button>
+            <div class="clearfix">
+                <button class="add-btn" onclick="openAddModal()"><i class="fas fa-plus"></i> Add Hostel</button>
             </div>
 
-            <!-- Add Hostel Button -->
-            <div class="add-hostel-wrapper">
-                <button class="btn-primary" id="addHostelBtn">
-                    <i class="fas fa-plus"></i> Add New Hostel / House
-                </button>
-            </div>
-
-            <!-- Up-School Section -->
-            <div id="upschoolSection" class="section-content active">
-                <div class="section-header">
-                    <h2><i class="fas fa-arrow-up"></i> Up-School Hostels</h2>
-                    <span class="hostel-count" id="upschoolCount">0 Hostels</span>
-                </div>
-                <div class="hostels-grid" id="upschoolGrid">
-                    <div style="text-align:center; padding:40px;">Loading hostels...</div>
-                </div>
-            </div>
-
-            <!-- Down-School Section -->
-            <div id="downschoolSection" class="section-content">
-                <div class="section-header">
-                    <h2><i class="fas fa-arrow-down"></i> Down-School Hostels</h2>
-                    <span class="hostel-count" id="downschoolCount">0 Hostels</span>
-                </div>
-                <div class="hostels-grid" id="downschoolGrid">
-                    <div style="text-align:center; padding:40px;">Loading hostels...</div>
-                </div>
-            </div>
-
-            <!-- Freshers Compound Section -->
-            <div id="freshersSection" class="section-content">
-                <div class="section-header">
-                    <h2><i class="fas fa-users"></i> Freshers Compound</h2>
-                    <span class="hostel-count" id="freshersCount">0 Hostels</span>
-                </div>
-                <div class="hostels-grid" id="freshersGrid">
-                    <div style="text-align:center; padding:40px;">Loading hostels...</div>
-                </div>
-            </div>
-
-            <!-- Sabbaticals Section -->
-            <div id="sabbaticalsSection" class="section-content">
-                <div class="section-header">
-                    <h2><i class="fas fa-home"></i> Sabbatical Houses</h2>
-                    <span class="hostel-count" id="sabbaticalsCount">0 Houses</span>
-                </div>
-                <div class="hostels-grid" id="sabbaticalsGrid">
-                    <div style="text-align:center; padding:40px;">Loading sabbaticals...</div>
-                </div>
+            <div class="hostels-grid" id="hostelsGrid">
+                <div style="text-align:center; padding:40px;">Loading hostels...</div>
             </div>
         </main>
     </div>
 
-    <!-- Add/Edit Hostel Modal -->
+    <!-- Form Modal -->
     <div id="hostelModal" class="modal">
-        <div class="modal-content modal-large">
-            <div class="modal-header">
-                <h2 id="modalTitle"><i class="fas fa-building"></i> Add Hostel</h2>
-                <button class="modal-close" onclick="closeHostelModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="hostelForm">
-                    <input type="hidden" id="hostelId">
-                    <input type="hidden" id="hostelSection">
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="hostelName">Hostel/House Name <span class="required">*</span></label>
-                            <input type="text" id="hostelName" required placeholder="e.g., Bangweulu Hostel">
-                        </div>
-                        <div class="form-group">
-                            <label for="hostelType">Type</label>
-                            <select id="hostelType">
-                                <option value="hostel">Hostel</option>
-                                <option value="sabbatical">Sabbatical House</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="hostelGender">Gender Policy</label>
-                            <select id="hostelGender">
-                                <option value="mixed">Mixed (All Genders)</option>
-                                <option value="male">Male Only</option>
-                                <option value="female">Female Only</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="hostelCapacity">Total Capacity</label>
-                            <input type="number" id="hostelCapacity" min="1" value="50">
-                        </div>
-                    </div>
-
-                    <div class="form-row" id="sabbaticalOptions" style="display: none;">
-                        <div class="form-group">
-                            <label for="hasServantQuarter">Servant Quarter</label>
-                            <select id="hasServantQuarter">
-                                <option value="no">No Servant Quarter</option>
-                                <option value="yes">Has Servant Quarter</option>
-                                <option value="is">Is Servant Quarter</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="houseNumber">House Number</label>
-                            <input type="text" id="houseNumber" placeholder="e.g., Sabbatical 1">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Hostel Image</label>
-                        <div id="imageDropzone" class="upload-dropzone">
-                            <i class="fas fa-cloud-upload-alt"></i>
-                            <p>Drag & drop an image here, or click to browse</p>
-                            <small>PNG, JPG, GIF up to 5MB</small>
-                        </div>
-                        <input type="file" id="hostelImageUpload" accept="image/*" style="display: none;">
-                        <div id="imagePreviewContainer" style="margin-top: 16px; display: none;">
-                            <label>Preview</label>
-                            <div class="image-preview-wrapper">
-                                <img id="imagePreview" src="" alt="Preview" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 12px;">
-                                <button type="button" class="remove-image-btn" onclick="removeSelectedImage()">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <input type="hidden" id="hostelImageData" value="">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="hostelDescription">Description (Optional)</label>
-                        <textarea id="hostelDescription" rows="3" placeholder="Enter hostel description..."></textarea>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-outline" onclick="closeHostelModal()">Cancel</button>
-                <button class="btn-primary" id="saveHostelBtn">
-                    <i class="fas fa-save"></i> Save Hostel
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Room Management Modal -->
-    <div id="roomManagementModal" class="modal">
-        <div class="modal-content modal-xlarge">
-            <div class="modal-header">
-                <h2><i class="fas fa-door-open"></i> Manage Rooms - <span id="roomHostelName"></span></h2>
-                <button class="modal-close" onclick="closeRoomModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="rooms-header">
-                    <h3>Rooms List</h3>
-                    <button class="btn-primary" id="addRoomBtn">
-                        <i class="fas fa-plus"></i> Add Room
-                    </button>
-                </div>
-                <div class="rooms-list" id="roomsList">
-                    <div style="text-align:center; padding:40px;">Loading rooms...</div>
-                </div>
-
-                <div class="add-room-form" id="addRoomForm" style="display: none;">
-                    <h4>Add New Room</h4>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Room Number</label>
-                            <input type="text" id="newRoomNumber" placeholder="e.g., A101">
-                        </div>
-                        <div class="form-group">
-                            <label>Capacity</label>
-                            <input type="number" id="newRoomCapacity" min="1" value="2">
-                        </div>
-                        <div class="form-group">
-                            <label>Floor</label>
-                            <input type="text" id="newRoomFloor" placeholder="e.g., Ground">
-                        </div>
-                    </div>
-                    <div class="form-actions">
-                        <button class="btn-outline" onclick="hideAddRoomForm()">Cancel</button>
-                        <button class="btn-primary" id="saveRoomBtn">Add Room</button>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-outline" onclick="closeRoomModal()">Close</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Delete Confirmation Modal -->
-    <div id="deleteModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2><i class="fas fa-exclamation-triangle"></i> Confirm Delete</h2>
-                <button class="modal-close" onclick="closeDeleteModal()">&times;</button>
+                <h2 id="modalTitle">Add Hostel</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
             </div>
             <div class="modal-body">
-                <p>Are you sure you want to delete <strong id="deleteItemName"></strong>?</p>
-                <p class="warning-text">This action cannot be undone. All associated rooms will also be deleted.</p>
+                <input type="hidden" id="hostelId">
+                <div class="form-group">
+                    <label>Hostel Name</label>
+                    <input type="text" id="hostelName" placeholder="e.g., Bangweulu Hostel">
+                </div>
+                <div class="form-group">
+                    <label>Location</label>
+                    <select id="hostelLocation">
+                        <option value="upschool">Up-School</option>
+                        <option value="downschool">Down-School</option>
+                        <option value="freshers">Freshers Compound</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Gender Policy</label>
+                    <select id="hostelGender">
+                        <option value="mixed">Mixed</option>
+                        <option value="male">Male Only</option>
+                        <option value="female">Female Only</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Total Capacity</label>
+                    <input type="number" id="hostelCapacity" placeholder="e.g., 200">
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="hostelDescription" rows="3" placeholder="Enter description..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Hostel Image</label>
+                    <input type="file" id="hostelImage" accept="image/*" onchange="previewImage(this)">
+                    <div id="imagePreviewDiv" class="image-preview" style="display: none;">
+                        <img id="imagePreview" src="">
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
-                <button class="btn-outline" onclick="closeDeleteModal()">Cancel</button>
-                <button class="btn-danger" id="confirmDeleteBtn">
-                    <i class="fas fa-trash"></i> Delete
-                </button>
+                <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+                <button class="btn-save" onclick="saveHostel()">Save Hostel</button>
             </div>
         </div>
     </div>
 
-    <!-- Toast Notification -->
-    <div id="toast" class="toast hidden"></div>
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="confirm-modal">
+        <div class="confirm-card">
+            <div class="confirm-header">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>Delete Hostel?</h3>
+            </div>
+            <div class="confirm-body">
+                <p>Are you sure you want to delete <strong id="deleteItemName"></strong>?</p>
+                <div class="warning-text"><i class="fas fa-info-circle"></i> All rooms will also be deleted.</div>
+            </div>
+            <div class="confirm-footer">
+                <button class="confirm-btn-secondary" onclick="closeConfirmModal()">Cancel</button>
+                <button class="confirm-btn-danger" id="confirmDeleteBtn">Delete</button>
+            </div>
+        </div>
+    </div>
 
-    <script src="{% static 'js/config.js' %}"></script>
-    <script src="{% static 'js/services/api.service.js' %}"></script>
-    <script src="{% static 'js/services/auth.service.js' %}"></script>
-    <script src="{% static 'js/services/student.service.js' %}"></script>
-    <script src="{% static 'js/services/accommodation.service.js' %}"></script>
-    <script src="{% static 'js/services/application.service.js' %}"></script>
-    <script src="{% static 'js/app.js' %}"></script>
-    <script src="{% static 'js/on-campus.js' %}"></script>
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script>
+        let currentEditId = null;
+        let pendingDeleteId = null;
+        let pendingDeleteName = null;
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i><div class="message">${message}</div>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('fade-out');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function previewImage(input) {
+            const previewDiv = document.getElementById('imagePreviewDiv');
+            const previewImg = document.getElementById('imagePreview');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    previewDiv.style.display = 'block';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            }).replace(/['"]/g, function(m) {
+                if (m === "'") return '&#39;';
+                if (m === '"') return '&quot;';
+                return m;
+            });
+        }
+
+        async function loadHostels() {
+            try {
+                const response = await fetch('/api/hostels/');
+                const data = await response.json();
+                const grid = document.getElementById('hostelsGrid');
+
+                if (data.success && data.hostels && data.hostels.length > 0) {
+                    grid.innerHTML = data.hostels.map(h => {
+                        let locationText = '';
+                        if (h.location === 'upschool') locationText = 'Up-School';
+                        else if (h.location === 'downschool') locationText = 'Down-School';
+                        else if (h.location === 'freshers') locationText = 'Freshers Compound';
+                        else locationText = h.location || 'Unknown';
+
+                        let genderText = '';
+                        if (h.gender_policy === 'mixed') genderText = 'Mixed';
+                        else if (h.gender_policy === 'male') genderText = 'Male Only';
+                        else if (h.gender_policy === 'female') genderText = 'Female Only';
+                        else genderText = h.gender_policy || 'Mixed';
+
+                        let imageHtml = h.image ? `<img src="${h.image}" alt="${escapeHtml(h.name)}">` : '<i class="fas fa-building" style="font-size: 48px;"></i>';
+                        let capacity = h.total_capacity || 0;
+                        let occupied = h.current_occupancy || 0;
+                        let available = capacity - occupied;
+
+                        return `
+                        <div class="hostel-card">
+                            <div class="hostel-image">${imageHtml}</div>
+                            <div class="hostel-info">
+                                <div class="hostel-name">${escapeHtml(h.name)}</div>
+                                <span class="hostel-location"><i class="fas fa-map-marker-alt"></i> ${locationText}</span>
+                                <div class="hostel-details">
+                                    <p><i class="fas fa-venus-mars"></i> ${genderText}</p>
+                                    <p><i class="fas fa-bed"></i> Capacity: ${capacity}</p>
+                                    <p><i class="fas fa-user"></i> Occupied: ${occupied}</p>
+                                    <p><i class="fas fa-door-open"></i> Available: ${available}</p>
+                                </div>
+                                <div class="hostel-actions">
+                                    <button class="edit-btn" onclick="editHostel(${h.id})"><i class="fas fa-edit"></i> Edit</button>
+                                    <button class="delete-btn" onclick="openConfirmModal(${h.id}, '${escapeHtml(h.name)}')"><i class="fas fa-trash"></i> Delete</button>
+                                </div>
+                            </div>
+                        </div>`;
+                    }).join('');
+                } else {
+                    grid.innerHTML = '<div style="text-align:center; padding:60px;"><i class="fas fa-building" style="font-size:48px;color:#cbd5e1;"></i><h3>No Hostels Found</h3><p>Click "Add Hostel" to get started.</p></div>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Error loading hostels', 'error');
+            }
+        }
+
+        function openAddModal() {
+            currentEditId = null;
+            document.getElementById('modalTitle').innerText = 'Add Hostel';
+            document.getElementById('hostelId').value = '';
+            document.getElementById('hostelName').value = '';
+            document.getElementById('hostelLocation').value = 'upschool';
+            document.getElementById('hostelGender').value = 'mixed';
+            document.getElementById('hostelCapacity').value = '';
+            document.getElementById('hostelDescription').value = '';
+            document.getElementById('hostelImage').value = '';
+            document.getElementById('imagePreviewDiv').style.display = 'none';
+            document.getElementById('hostelModal').classList.add('show');
+        }
+
+        async function editHostel(id) {
+    try {
+        showToast('Loading hostel details...', 'success');
+        const response = await fetch(`/api/hostels/${id}/`);
+        const data = await response.json();
+
+        if (data.success && data.hostel) {
+            const hostel = data.hostel;
+            currentEditId = hostel.id;
+
+            // Set modal title
+            document.getElementById('modalTitle').innerText = 'Edit Hostel';
+
+            // Set hidden ID
+            document.getElementById('hostelId').value = hostel.id;
+
+            // Set text fields
+            document.getElementById('hostelName').value = hostel.name || '';
+            document.getElementById('hostelLocation').value = hostel.location || 'upschool';
+            document.getElementById('hostelGender').value = hostel.gender_policy || 'mixed';
+            document.getElementById('hostelDescription').value = hostel.description || '';
+
+            // CRITICAL FIX: Set capacity value
+            const capacityField = document.getElementById('hostelCapacity');
+            if (capacityField) {
+                capacityField.value = hostel.total_capacity || '';
+                console.log('Capacity set to:', capacityField.value);
+            } else {
+                console.error('hostelCapacity input not found!');
+            }
+
+            // Handle image preview
+            const previewDiv = document.getElementById('imagePreviewDiv');
+            const previewImg = document.getElementById('imagePreview');
+
+            if (hostel.image && hostel.image !== 'null' && hostel.image !== '') {
+                previewImg.src = hostel.image;
+                previewDiv.style.display = 'block';
+            } else {
+                previewDiv.style.display = 'none';
+                previewImg.src = '';
+            }
+
+            // Clear file input
+            document.getElementById('hostelImage').value = '';
+
+            // Show modal
+            document.getElementById('hostelModal').classList.add('show');
+        } else {
+            showToast('Failed to load hostel details', 'error');
+        }
+    } catch (error) {
+        console.error('Edit error:', error);
+        showToast('Error loading hostel details: ' + error.message, 'error');
+    }
+}
+
+        async function saveHostel() {
+            const name = document.getElementById('hostelName').value.trim();
+            if (!name) {
+                showToast('Please enter hostel name', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('name', name);
+            formData.append('location', document.getElementById('hostelLocation').value);
+            formData.append('gender_policy', document.getElementById('hostelGender').value);
+            formData.append('total_capacity', document.getElementById('hostelCapacity').value || 0);
+            formData.append('description', document.getElementById('hostelDescription').value);
+
+            const imageFile = document.getElementById('hostelImage').files[0];
+            if (imageFile) formData.append('image', imageFile);
+
+            try {
+                let url, method;
+                if (currentEditId) {
+                    url = `/api/hostels/${currentEditId}/update/`;
+                    method = 'PUT';
+                } else {
+                    url = '/api/hostels/create/';
+                    method = 'POST';
+                }
+
+                const response = await fetch(url, {
+                    method: method,
+                    body: formData,
+                    headers: { 'X-CSRFToken': getCookie('csrftoken') }
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showToast(currentEditId ? 'Hostel updated successfully!' : 'Hostel created successfully!');
+                    closeModal();
+                    loadHostels();
+                } else {
+                    showToast(result.message || 'Error saving hostel', 'error');
+                }
+            } catch (error) {
+                console.error('Save error:', error);
+                showToast('Error saving hostel', 'error');
+            }
+        }
+
+        function openConfirmModal(id, name) {
+            pendingDeleteId = id;
+            pendingDeleteName = name;
+            document.getElementById('deleteItemName').innerText = name;
+            document.getElementById('confirmModal').classList.add('show');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').classList.remove('show');
+            pendingDeleteId = null;
+            pendingDeleteName = null;
+        }
+
+        async function executeDelete() {
+            if (!pendingDeleteId) return;
+            const id = pendingDeleteId;
+            const name = pendingDeleteName;
+
+            try {
+                const response = await fetch(`/api/hostels/${id}/delete/`, {
+                    method: 'DELETE',
+                    headers: { 'X-CSRFToken': getCookie('csrftoken') }
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showToast(`Hostel "${name}" deleted successfully!`);
+                    loadHostels();
+                } else {
+                    showToast(result.message || 'Delete failed', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Error deleting hostel', 'error');
+            }
+            closeConfirmModal();
+        }
+
+        function closeModal() {
+            document.getElementById('hostelModal').classList.remove('show');
+        }
+
+        // Set up delete button event listener
+        document.getElementById('confirmDeleteBtn').onclick = executeDelete;
+
+        document.getElementById('logoutBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            if (confirm('Are you sure you want to logout?')) {
+                fetch('/api/auth/logout/', {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': getCookie('csrftoken') }
+                }).then(() => window.location.href = '/');
+            }
+        });
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            if (event.target === document.getElementById('hostelModal')) closeModal();
+            if (event.target === document.getElementById('confirmModal')) closeConfirmModal();
+        };
+
+        // Initialize
+        loadHostels();
+    </script>
 </body>
 </html>

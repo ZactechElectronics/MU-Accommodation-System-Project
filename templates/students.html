@@ -6,15 +6,88 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MU • Students Management</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <link rel="stylesheet" href="{% static 'css/student.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f1f5f9; color: #1e293b; }
+
+        /* Sidebar - Same as dashboard */
+        .app { display: flex; min-height: 100vh; }
+        .sidebar {
+            width: 280px;
+            background: #0f172a;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+        }
+        .sidebar::-webkit-scrollbar { width: 5px; }
+        .sidebar::-webkit-scrollbar-track { background: #1e293b; }
+        .sidebar::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+        .logo-area { padding: 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: center; }
+        .logo-text { font-size: 20px; font-weight: 700; display: block; color: white; }
+        .logo-sub { font-size: 11px; color: #94a3b8; margin-top: 5px; display: block; }
+        .nav { flex: 1; padding: 20px 12px; display: flex; flex-direction: column; gap: 4px; }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            color: #cbd5e1;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .nav-item i { width: 22px; font-size: 18px; }
+        .nav-item:hover { background: rgba(255,255,255,0.1); color: white; }
+        .nav-item.active { background: #3b82f6; color: white; }
+        .nav-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 12px 8px; }
+        .nav-section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #64748b; padding: 12px 16px 4px; }
+        .logout-btn { margin-top: auto; color: #f87171; }
+        .logout-btn:hover { background: rgba(248,113,113,0.1); color: #f87171; }
+
+        /* Main Content */
+        .main { flex: 1; margin-left: 280px; padding: 24px 32px; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; flex-wrap: wrap; gap: 16px; }
+        .page-title h1 { font-size: 28px; font-weight: 700; color: #0f172a; }
+        .page-title p { color: #64748b; margin-top: 4px; }
+        .admin-badge { background: white; padding: 8px 18px; border-radius: 40px; font-weight: 500; color: #3b82f6; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+        /* Cards */
+        .info-card { background: white; border-radius: 20px; padding: 24px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .card-header { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #e2e8f0; }
+        .card-header h2 { font-size: 20px; display: flex; align-items: center; gap: 10px; }
+
+        /* Search */
+        .search-wrapper { display: flex; align-items: center; background: white; padding: 8px 16px; border-radius: 40px; border: 1px solid #e2e8f0; max-width: 400px; margin-bottom: 20px; }
+        .search-wrapper i { color: #94a3b8; margin-right: 10px; }
+        .search-wrapper input { border: none; outline: none; width: 100%; font-size: 14px; background: transparent; }
+
+        /* Table */
+        .table-wrapper { overflow-x: auto; }
+        .student-table { width: 100%; border-collapse: collapse; }
+        .student-table th, .student-table td { padding: 12px 8px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        .student-table th { color: #64748b; font-weight: 600; font-size: 13px; }
+        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 30px; font-size: 12px; font-weight: 500; background: #dcfce7; color: #166534; }
+        .action-icon { color: #94a3b8; cursor: pointer; margin: 0 5px; }
+        .action-icon:hover { color: #3b82f6; }
+
+        /* Toast */
+        .toast { position: fixed; bottom: 30px; right: 30px; padding: 14px 24px; background: #1e293b; color: white; border-radius: 40px; z-index: 1000; transition: 0.3s; }
+        .toast.hidden { opacity: 0; visibility: hidden; transform: translateY(10px); }
+
+        /* Responsive */
+        @media (max-width: 1024px) { .sidebar { width: 240px; } .main { margin-left: 240px; } }
+        @media (max-width: 768px) { .sidebar { width: 70px; } .logo-text, .logo-sub, .nav-item span, .nav-section-title { display: none; } .nav-item { justify-content: center; padding: 12px; } .main { margin-left: 70px; padding: 16px; } }
+    </style>
 </head>
 <body>
     <div class="app">
         <aside class="sidebar">
             <div class="logo-area">
-                <span class="logo-icon"><i class="fas fa-graduation-cap"></i></span>
                 <span class="logo-text">MULUNGUSHI</span>
                 <span class="logo-sub">Accommodation System</span>
             </div>
@@ -39,14 +112,8 @@
                 <a href="analytics.html" class="nav-item">
                     <i class="fas fa-chart-pie"></i> <span>Analytics</span>
                 </a>
-                <a href="activity.html" class="nav-item">
-                    <i class="fas fa-clock"></i> <span>Activity Monitor</span>
-                </a>
                 <div class="nav-divider"></div>
-                <a href="settings.html" class="nav-item">
-                    <i class="fas fa-cog"></i> <span>Settings</span>
-                </a>
-                <a href="/" class="nav-item logout-btn">
+                <a href="/" class="nav-item logout-btn" id="logoutBtn">
                     <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
                 </a>
             </nav>
@@ -58,108 +125,75 @@
                     <h1>Students Management</h1>
                     <p>View and manage all students</p>
                 </div>
-                <div class="admin-badge">
-                    <i class="fas fa-user-shield"></i> Administrator
-                </div>
+                <div class="admin-badge"><i class="fas fa-user-shield"></i> Administrator</div>
             </header>
 
-            <div class="summary-cards">
-                <div class="summary-card total">
-                    <div class="card-icon"><i class="fas fa-users"></i></div>
-                    <div class="card-content">
-                        <span class="card-label">Total Students</span>
-                        <span class="card-value" id="totalStudentsCount">0</span>
-                    </div>
+            <div class="info-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-user-graduate"></i> All Students</h2>
                 </div>
-                <div class="summary-card accommodated">
-                    <div class="card-icon"><i class="fas fa-bed"></i></div>
-                    <div class="card-content">
-                        <span class="card-label">Accommodated</span>
-                        <span class="card-value" id="accommodatedCount">0</span>
-                    </div>
+                <div class="search-wrapper">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="studentSearch" placeholder="Search by name, student ID, or email...">
                 </div>
-                <div class="summary-card on-campus">
-                    <div class="card-icon"><i class="fas fa-building"></i></div>
-                    <div class="card-content">
-                        <span class="card-label">On-Campus</span>
-                        <span class="card-value" id="onCampusCount">0</span>
-                    </div>
-                </div>
-                <div class="summary-card off-campus">
-                    <div class="card-icon"><i class="fas fa-home"></i></div>
-                    <div class="card-content">
-                        <span class="card-label">Off-Campus</span>
-                        <span class="card-value" id="offCampusCount">0</span>
-                    </div>
-                </div>
-                <div class="summary-card not-accommodated">
-                    <div class="card-icon"><i class="fas fa-user-minus"></i></div>
-                    <div class="card-content">
-                        <span class="card-label">Not Accommodated</span>
-                        <span class="card-value" id="notAccommodatedCount">0</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="students-toolbar">
-                <div class="filter-tabs">
-                    <button class="filter-tab active" data-filter="all"><i class="fas fa-users"></i> All Students</button>
-                    <button class="filter-tab" data-filter="accommodated"><i class="fas fa-bed"></i> Accommodated</button>
-                    <button class="filter-tab" data-filter="on-campus"><i class="fas fa-building"></i> On-Campus</button>
-                    <button class="filter-tab" data-filter="off-campus"><i class="fas fa-home"></i> Off-Campus</button>
-                    <button class="filter-tab" data-filter="not-accommodated"><i class="fas fa-user-minus"></i> Not Accommodated</button>
-                </div>
-                <div class="toolbar-actions">
-                    <div class="search-wrapper">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="searchStudents" placeholder="Search by name, ID, email...">
-                    </div>
-                    <button class="btn-outline" id="exportStudentsBtn"><i class="fas fa-download"></i> Export CSV</button>
-                    <button class="btn-primary" id="refreshStudentsBtn"><i class="fas fa-sync-alt"></i> Refresh</button>
-                </div>
-            </div>
-
-            <div class="students-table-container">
-                <table class="students-table">
-                    <thead>
-                        <tr>
-                            <th width="5%"><input type="checkbox" id="selectAllCheckbox"></th>
-                            <th>Student ID</th>
-                            <th>Student Name</th>
-                            <th>Program</th>
-                            <th>Email</th>
-                            <th>Type</th>
-                            <th>Accommodation Details</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="studentsTableBody">
-                        <tr><td colspan="9" style="text-align:center">Loading students...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="pagination-container">
-                <div class="pagination-info">Showing <span id="showingStart">0</span> to <span id="showingEnd">0</span> of <span id="totalRecords">0</span> students</div>
-                <div class="pagination-controls">
-                    <button class="page-btn" id="prevPageBtn" disabled><i class="fas fa-chevron-left"></i></button>
-                    <span class="page-numbers" id="pageNumbers"></span>
-                    <button class="page-btn" id="nextPageBtn" disabled><i class="fas fa-chevron-right"></i></button>
+                <div class="table-wrapper">
+                    <table class="student-table">
+                        <thead>
+                            <tr><th>ID</th><th>Student ID</th><th>Name</th><th>Email</th><th>Program</th><th>Status</th><th>Actions</th></tr>
+                        </thead>
+                        <tbody id="studentsTableBody"><tr><td colspan="7" class="loading">Loading students...</td></tr></tbody>
+                    </table>
                 </div>
             </div>
         </main>
     </div>
-
     <div id="toast" class="toast hidden"></div>
 
-    <script src="{% static 'js/config.js' %}"></script>
-    <script src="{% static 'js/services/api.service.js' %}"></script>
-    <script src="{% static 'js/services/auth.service.js' %}"></script>
-    <script src="{% static 'js/services/student.service.js' %}"></script>
-    <script src="{% static 'js/services/accommodation.service.js' %}"></script>
-    <script src="{% static 'js/services/application.service.js' %}"></script>
-    <script src="{% static 'js/app.js' %}"></script>
-    <script src="{% static 'js/students.js' %}"></script>
+    <script>
+        function showToast(msg, type='success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.className = `toast ${type}`;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3000);
+        }
+
+        async function loadStudents() {
+            try {
+                const response = await fetch('/api/students/');
+                const data = await response.json();
+                if (data.success && data.students) {
+                    const tbody = document.getElementById('studentsTableBody');
+                    tbody.innerHTML = data.students.map(s => `
+                        <tr>
+                            <td>${s.id}</td>
+                            <td>${s.student_id || 'N/A'}</td>
+                            <td>${s.first_name} ${s.last_name}</td>
+                            <td>${s.email}</td>
+                            <td>${s.program || 'N/A'}</td>
+                            <td><span class="status-badge">Active</span></td>
+                            <td><i class="fas fa-eye action-icon" onclick="showToast('View student ${s.id}')"></i></td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        document.getElementById('studentSearch')?.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            document.querySelectorAll('#studentsTableBody tr').forEach(row => {
+                row.style.display = row.textContent.toLowerCase().includes(term) ? '' : 'none';
+            });
+        });
+
+        document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            if(confirm('Logout?')) fetch('/api/auth/logout/', {method:'POST'}).then(()=>window.location.href='/');
+        });
+
+        loadStudents();
+    </script>
 </body>
 </html>

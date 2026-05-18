@@ -1,7 +1,7 @@
 // Application Configuration
 const AppConfig = {
     // Toggle between mock and real API
-    USE_MOCK_API: false, // Set to false when backend is ready
+    USE_MOCK_API:true, // Set to false when backend is ready
     
     // API Base URL -  remember to change to backend URL Adon!
     API_BASE_URL: 'http://localhost:8000/api',

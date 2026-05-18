@@ -1,97 +1,11 @@
 <!DOCTYPE html>
-{% load static %}
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mulungushi University • Student Accommodation</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta http-equiv="refresh" content="0; url=/">
+    <title>Redirecting...</title>
 </head>
-<body class="auth-body">
-
-    <!-- LEFT PANEL: Branding -->
-    <div class="auth-left">
-        <div class="auth-left__overlay"></div>
-        <div class="auth-left__content">
-            <div class="logo">
-                <span class="logo-icon"><i class="fas fa-building-columns"></i></span>
-                <span class="logo-text">MULUNGUSHI UNIVERSITY</span>
-            </div>
-            <h1 class="auth-left__headline">Your <em>Home</em> Away<br>From Home</h1>
-            <p class="auth-left__sub">Browse verified university and off-campus residences, apply instantly, and track your accommodation status — all in one place.</p>
-            <div class="auth-left__stats">
-                <div class="stat"><span class="stat-num">1,200+</span><span class="stat-label">Spaces Available</span></div>
-                <div class="stat"><span class="stat-num">8</span><span class="stat-label">On-Campus Hostels</span></div>
-                <div class="stat"><span class="stat-num">24/7</span><span class="stat-label">Support</span></div>
-            </div>
-        </div>
-        <div class="deco-circle deco-1"></div>
-        <div class="deco-circle deco-2"></div>
-    </div>
-
-    <!-- RIGHT PANEL: Login Form -->
-    <div class="auth-right">
-        <div class="auth-card">
-            <div class="auth-form" id="loginForm">
-                <div class="form-header">
-                    <h2>Welcome</h2>
-                    <p>Sign in using your student ID</p>
-                </div>
-                <div class="form-group">
-                    <label>Username</label>
-                    <div class="input-wrap">
-                        <i class="fas fa-user"></i>
-                        <input type="text" id="loginIdentifier" placeholder="Enter your username">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <div class="input-wrap">
-                        <i class="fas fa-lock"></i>
-                        <input type="password" id="loginPassword" placeholder="Enter your password">
-                        <span class="toggle-pw" onclick="togglePassword('loginPassword', this)"><i class="fas fa-eye"></i></span>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <label class="checkbox-label"><input type="checkbox" id="rememberMe"> Remember me</label>
-                    <a href="#" class="link-subtle">Forgot password?</a>
-                </div>
-                <button class="btn-primary" id="loginBtn" onclick="handleLogin()">
-                    <span>Sign In</span><i class="fas fa-arrow-right"></i>
-                </button>
-                <div id="loginMsg" class="form-msg"></div>
-                <div class="form-row" style="justify-content: center; margin-top: 16px;">
-                    <span style="font-size: 12px;">Test: admin / admin123 | student1 / student123</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        function togglePassword(fieldId, element) {
-            const field = document.getElementById(fieldId);
-            const icon = element.querySelector('i');
-            if (field.type === 'password') {
-                field.type = 'text';
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
-            } else {
-                field.type = 'password';
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
-            }
-        }
-    </script>
-
-    <script src="{% static 'js/config.js' %}"></script>
-    <script src="{% static 'js/services/api.service.js' %}"></script>
-    <script src="{% static 'js/services/auth.service.js' %}"></script>
-    <script src="{% static 'js/services/student.service.js' %}"></script>
-    <script src="{% static 'js/services/accommodation.service.js' %}"></script>
-    <script src="{% static 'js/services/application.service.js' %}"></script>
-    <script src="{% static 'js/app.js' %}"></script>
-    <script src="{% static 'js/auth.js' %}"></script>
+<body>
+    <p>Redirecting to <a href="/">login page</a>...</p>
 </body>
 </html>

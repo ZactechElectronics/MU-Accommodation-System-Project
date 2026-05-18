@@ -6,14 +6,244 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MU • Activity Monitor</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f1f5f9; color: #1e293b; }
+
+        .app { display: flex; min-height: 100vh; }
+        .sidebar {
+            width: 280px;
+            background: #0f172a;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+        }
+        .sidebar::-webkit-scrollbar { width: 5px; }
+        .sidebar::-webkit-scrollbar-track { background: #1e293b; }
+        .sidebar::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+
+        .logo-area { padding: 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: center; }
+        .logo-text { font-size: 20px; font-weight: 700; display: block; color: white; }
+        .logo-sub { font-size: 11px; color: #94a3b8; margin-top: 5px; display: block; }
+
+        .nav { flex: 1; padding: 20px 12px; display: flex; flex-direction: column; gap: 4px; }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            color: #cbd5e1;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .nav-item i { width: 22px; font-size: 18px; }
+        .nav-item:hover { background: rgba(255,255,255,0.1); color: white; }
+        .nav-item.active { background: #3b82f6; color: white; }
+        .nav-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 12px 8px; }
+        .nav-section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #64748b; padding: 12px 16px 4px; }
+        .logout-btn { margin-top: auto; color: #f87171; }
+        .logout-btn:hover { background: rgba(248,113,113,0.1); color: #f87171; }
+
+        .main { flex: 1; margin-left: 280px; padding: 24px 32px; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; flex-wrap: wrap; gap: 16px; }
+        .page-title h1 { font-size: 28px; font-weight: 700; color: #0f172a; }
+        .page-title p { color: #64748b; margin-top: 4px; }
+        .admin-badge {
+            background: white;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-weight: 500;
+            color: #3b82f6;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #1a1a1a;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+        .live-dot {
+            width: 10px;
+            height: 10px;
+            background-color: #ff0000;
+            border-radius: 50%;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        .live-text {
+            color: #00ff00;
+            font-size: 12px;
+        }
+
+        .activity-container {
+            background: #0a0a0a;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid #333;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+        .activity-header {
+            background: #1a1a1a;
+            padding: 16px 20px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .activity-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+        }
+        .activity-header h2 i {
+            color: #00ff00;
+            margin-right: 10px;
+        }
+        .activity-badge {
+            background: #00ff00;
+            color: #000;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .activity-body {
+            height: 500px;
+            overflow-y: auto;
+            padding: 16px;
+            background: #0a0a0a;
+        }
+        .activity-body::-webkit-scrollbar { width: 6px; }
+        .activity-body::-webkit-scrollbar-track { background: #1a1a1a; }
+        .activity-body::-webkit-scrollbar-thumb { background: #00ff00; border-radius: 3px; }
+
+        .activity-item {
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            background: #111;
+            border-left: 3px solid #00ff00;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 14px;
+        }
+        .activity-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            background: rgba(0,255,0,0.1);
+            color: #00ff00;
+        }
+        .activity-content { flex: 1; }
+        .activity-action {
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #00ff00;
+        }
+        .activity-desc {
+            color: #00cc00;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+        .activity-time {
+            color: #008800;
+            font-size: 11px;
+        }
+        .activity-user {
+            color: #00ff00;
+            font-size: 11px;
+            margin-right: 10px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            color: #00ff00;
+        }
+        .empty-state i { font-size: 48px; margin-bottom: 16px; color: #008800; }
+
+        .refresh-btn, .export-btn {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #00ff00;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .refresh-btn:hover, .export-btn:hover {
+            background: #2a2a2a;
+            border-color: #00ff00;
+        }
+        .export-btn {
+            background: #0a2a0a;
+            border-color: #00ff00;
+        }
+        .export-btn:hover {
+            background: #0a3a0a;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #00ff00;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .filter-btn:hover {
+            background: #2a2a2a;
+            border-color: #00ff00;
+        }
+        .filter-btn.active-filter {
+            background: #00ff00;
+            color: #000;
+            border-color: #00ff00;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        @media (max-width: 1024px) { .sidebar { width: 240px; } .main { margin-left: 240px; } }
+        @media (max-width: 768px) { .sidebar { width: 70px; } .logo-text, .logo-sub, .nav-item span, .nav-section-title { display: none; } .nav-item { justify-content: center; padding: 12px; } .main { margin-left: 70px; padding: 16px; } .activity-item { flex-wrap: wrap; } .filter-buttons { flex-wrap: wrap; } .button-group { flex-wrap: wrap; } }
+    </style>
 </head>
 <body>
     <div class="app">
         <aside class="sidebar">
             <div class="logo-area">
-                <span class="logo-icon"><i class="fas fa-graduation-cap"></i></span>
                 <span class="logo-text">MULUNGUSHI</span>
                 <span class="logo-sub">Accommodation System</span>
             </div>
@@ -28,8 +258,7 @@
                 <a href="analytics.html" class="nav-item"><i class="fas fa-chart-pie"></i> <span>Analytics</span></a>
                 <a href="activity.html" class="nav-item active"><i class="fas fa-clock"></i> <span>Activity Monitor</span></a>
                 <div class="nav-divider"></div>
-                <a href="settings.html" class="nav-item"><i class="fas fa-cog"></i> <span>Settings</span></a>
-                <a href="/" class="nav-item logout-btn"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a>
+                <a href="/" class="nav-item logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a>
             </nav>
         </aside>
 
@@ -39,38 +268,303 @@
                     <h1>Activity Monitor</h1>
                     <p>Track system activities and changes</p>
                 </div>
-                <div class="admin-badge"><i class="fas fa-user-shield"></i> Administrator</div>
+                <div class="admin-badge">
+                    <div class="live-indicator">
+                        <div class="live-dot"></div>
+                        <span class="live-text">LIVE</span>
+                    </div>
+                </div>
             </header>
 
-            <div class="info-card">
-                <div class="card-header">
-                    <h2><i class="fas fa-clock"></i> Recent Activities</h2>
-                    <button class="btn-outline" id="clearActivityBtn"><i class="fas fa-trash"></i> Clear Log</button>
+            <div class="activity-container">
+                <div class="activity-header">
+                    <h2><i class="fas fa-list"></i> Recent Activities</h2>
+                    <div class="filter-buttons">
+                        <button class="filter-btn active-filter" data-filter="all">All</button>
+                        <button class="filter-btn" data-filter="login">Login</button>
+                        <button class="filter-btn" data-filter="logout">Logout</button>
+                        <button class="filter-btn" data-filter="approve">Approvals</button>
+                        <button class="filter-btn" data-filter="reject">Rejections</button>
+                        <button class="filter-btn" data-filter="create">Creations</button>
+                    </div>
+                    <div class="button-group">
+                        <button class="export-btn" id="exportBtn"><i class="fas fa-download"></i> Export Logs</button>
+                        <button class="refresh-btn" id="refreshBtn"><i class="fas fa-sync-alt"></i> Refresh</button>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="activity-filters">
-                        <button class="filter-btn active" data-filter="all">All</button>
-                        <button class="filter-btn" data-filter="login">Logins</button>
-                        <button class="filter-btn" data-filter="application">Applications</button>
-                        <button class="filter-btn" data-filter="accommodation">Accommodation</button>
+                <div class="activity-body" id="activityBody">
+                    <div class="empty-state">
+                        <i class="fas fa-clock"></i>
+                        <p>Loading activities...</p>
                     </div>
-                    <div class="activity-timeline" id="activityTimeline">
-                        <div style="text-align:center; padding:40px;">Loading activities...</div>
-                    </div>
+                </div>
+                <div class="activity-header" style="border-top: 1px solid #333; justify-content: flex-end;">
+                    <span id="lastUpdateTime" style="color: #008800; font-size: 11px;">Last update: --:--:--</span>
                 </div>
             </div>
         </main>
     </div>
 
-    <div id="toast" class="toast hidden"></div>
+    <div id="toast" class="toast" style="display:none;"></div>
 
-    <script src="{% static 'js/config.js' %}"></script>
-    <script src="{% static 'js/services/api.service.js' %}"></script>
-    <script src="{% static 'js/services/auth.service.js' %}"></script>
-    <script src="{% static 'js/services/student.service.js' %}"></script>
-    <script src="{% static 'js/services/accommodation.service.js' %}"></script>
-    <script src="{% static 'js/services/application.service.js' %}"></script>
-    <script src="{% static 'js/app.js' %}"></script>
-    <script src="{% static 'js/activity.js' %}"></script>
+    <script>
+        let currentFilter = 'all';
+        let activitiesData = [];
+        let refreshInterval = null;
+
+        function getTimestamp() {
+            return new Date().getTime();
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatTime(timestamp) {
+            if (!timestamp) return 'N/A';
+            try {
+                const date = new Date(timestamp);
+                return date.toLocaleString();
+            } catch(e) {
+                return timestamp;
+            }
+        }
+
+        function updateLastUpdateTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString();
+            const dateStr = now.toLocaleDateString();
+            const updateSpan = document.getElementById('lastUpdateTime');
+            if (updateSpan) {
+                updateSpan.innerHTML = `Last update: ${dateStr} ${timeStr} | Total logs: ${activitiesData.length}`;
+            }
+        }
+
+        async function loadActivities() {
+            try {
+                const response = await fetch(`/api/activities/?t=${getTimestamp()}`, {
+                    cache: 'no-store',
+                    headers: {
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    }
+                });
+                const data = await response.json();
+
+                console.log('Activities loaded at:', new Date().toLocaleTimeString(), 'Count:', data.logs?.length || 0);
+
+                if (data.success && data.logs) {
+                    activitiesData = data.logs;
+                } else if (Array.isArray(data)) {
+                    activitiesData = data;
+                } else {
+                    activitiesData = [];
+                }
+
+                renderActivities();
+                updateLastUpdateTime();
+            } catch (error) {
+                console.error('Error loading activities:', error);
+                document.getElementById('activityBody').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>Error loading activities</p>
+                        <small>${error.message}</small>
+                    </div>
+                `;
+            }
+        }
+
+        function renderActivities() {
+            const container = document.getElementById('activityBody');
+
+            let filtered = activitiesData;
+            if (currentFilter !== 'all') {
+                filtered = activitiesData.filter(log => {
+                    const action = (log.action || '').toLowerCase();
+                    return action.includes(currentFilter.toLowerCase());
+                });
+            }
+
+            if (!filtered || filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <p>No activities recorded yet</p>
+                        <small>Activities will appear here as users interact with the system</small>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = '';
+
+            // Show newest first (reverse order)
+            filtered.slice().reverse().forEach(log => {
+                const action = log.action || 'info';
+                const actionLower = action.toLowerCase();
+                const user = log.user || log.username || log.user_full_name || 'SYSTEM';
+                const description = log.description || `${action} operation performed`;
+                const timestamp = log.timestamp || log.created_at || new Date().toISOString();
+
+                let actionUpper = action.toUpperCase();
+                let actionIcon = 'fa-info-circle';
+
+                if (actionLower.includes('login')) {
+                    actionIcon = 'fa-sign-in-alt';
+                } else if (actionLower.includes('logout')) {
+                    actionIcon = 'fa-sign-out-alt';
+                } else if (actionLower.includes('approve')) {
+                    actionIcon = 'fa-check-circle';
+                } else if (actionLower.includes('reject')) {
+                    actionIcon = 'fa-times-circle';
+                } else if (actionLower.includes('create')) {
+                    actionIcon = 'fa-plus-circle';
+                } else if (actionLower.includes('delete')) {
+                    actionIcon = 'fa-trash-alt';
+                } else if (actionLower.includes('update')) {
+                    actionIcon = 'fa-edit';
+                }
+
+                const item = document.createElement('div');
+                item.className = 'activity-item';
+                item.innerHTML = `
+                    <div class="activity-icon">
+                        <i class="fas ${actionIcon}"></i>
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-action">
+                            ${actionUpper}
+                            <span class="activity-user">(${escapeHtml(user)})</span>
+                        </div>
+                        <div class="activity-desc">${escapeHtml(description)}</div>
+                        <div class="activity-time">${escapeHtml(formatTime(timestamp))}</div>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+
+            // Auto-scroll to top (newest first)
+            container.scrollTop = 0;
+        }
+
+        function filterActivities(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if (btn.dataset.filter === filter) {
+                    btn.classList.add('active-filter');
+                } else {
+                    btn.classList.remove('active-filter');
+                }
+            });
+            renderActivities();
+        }
+
+        // Export logs to CSV
+        function exportLogs() {
+            if (activitiesData.length === 0) {
+                alert('No activity logs to export');
+                return;
+            }
+
+            let filtered = activitiesData;
+            if (currentFilter !== 'all') {
+                filtered = activitiesData.filter(log => {
+                    const action = (log.action || '').toLowerCase();
+                    return action.includes(currentFilter.toLowerCase());
+                });
+            }
+
+            // CSV headers
+            const headers = ['ID', 'Action', 'User', 'Description', 'IP Address', 'Timestamp'];
+
+            // Prepare rows
+            const rows = filtered.map(log => [
+                log.id || '',
+                log.action || '',
+                log.user || log.username || 'SYSTEM',
+                log.description || '',
+                log.ip_address || '',
+                log.created_at || log.timestamp || ''
+            ]);
+
+            // Create CSV content
+            let csvContent = headers.join(',') + '\n';
+            rows.forEach(row => {
+                const escapedRow = row.map(cell => {
+                    if (typeof cell === 'string' && (cell.includes(',') || cell.includes('"') || cell.includes('\n'))) {
+                        return `"${cell.replace(/"/g, '""')}"`;
+                    }
+                    return cell;
+                }).join(',');
+                csvContent += escapedRow + '\n';
+            });
+
+            // Download file
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.href = url;
+            link.setAttribute('download', `activity_logs_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                if (refreshInterval) {
+                    clearInterval(refreshInterval);
+                }
+                fetch('/api/auth/logout/', { method: 'POST' })
+                    .then(() => { window.location.href = '/'; })
+                    .catch(() => { window.location.href = '/'; });
+            }
+        }
+
+        document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            handleLogout();
+        });
+
+        document.getElementById('refreshBtn')?.addEventListener('click', () => {
+            loadActivities();
+        });
+
+        document.getElementById('exportBtn')?.addEventListener('click', () => {
+            exportLogs();
+        });
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterActivities(btn.dataset.filter);
+            });
+        });
+
+        // Load activities immediately
+        loadActivities();
+
+        // Set up real-time refresh every 3 seconds
+        refreshInterval = setInterval(loadActivities, 3000);
+
+        // Refresh when page becomes visible
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                console.log('Page became visible - refreshing...');
+                loadActivities();
+            }
+        });
+
+        // Clean up interval on page unload
+        window.addEventListener('beforeunload', function() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        });
+    </script>
 </body>
 </html>

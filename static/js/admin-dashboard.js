@@ -1,188 +1,111 @@
-// Admin Dashboard - Real Data from API
+// static/js/admin-dashboard.js
 (function() {
     'use strict';
 
-    // Function to fetch and update dashboard stats
-    async function loadDashboardStats() {
+    async function loadDashboard() {
         try {
-            const response = await fetch('/api/dashboard/stats/');
+            // Fetch dashboard stats with cache-busting
+            const response = await fetch('/api/dashboard/stats/?t=' + Date.now());
             const data = await response.json();
+            console.log('Dashboard data:', data);
 
-            console.log('Dashboard data loaded:', data);
+            if (data.success) {
+                // Update KPI cards
+                const totalStudents = document.getElementById('totalStudents');
+                const accommodatedCount = document.getElementById('accommodatedCount');
+                const pendingApps = document.getElementById('pendingApps');
+                const approvedApps = document.getElementById('approvedApps');
 
-            // Update KPI Cards
-            document.getElementById('totalStudents').textContent = data.total_students || 0;
-            document.getElementById('accommodatedCount').textContent = data.accommodated_students || 0;
-            document.getElementById('pendingApps').textContent = data.pending_applications || 0;
-            document.getElementById('approvedApps').textContent = data.approved_applications || 0;
+                if (totalStudents) totalStudents.innerText = data.total_students || 0;
+                if (accommodatedCount) accommodatedCount.innerText = data.accommodated_students || 0;
+                if (pendingApps) pendingApps.innerText = data.pending_applications || 0;
+                if (approvedApps) approvedApps.innerText = data.approved_applications || 0;
 
-            // Update Rooms & Hostels section
-            document.getElementById('totalOnCampusRooms').textContent = data.on_campus?.total_rooms || 0;
-            document.getElementById('availableOnCampusRooms').textContent = data.on_campus?.available || 0;
-            document.getElementById('takenOnCampusRooms').textContent = data.on_campus?.taken || 0;
+                // Update Rooms & Hostels section
+                const totalOnCampusRooms = document.getElementById('totalOnCampusRooms');
+                const availableOnCampusRooms = document.getElementById('availableOnCampusRooms');
+                const takenOnCampusRooms = document.getElementById('takenOnCampusRooms');
+                const totalOffCampusHouses = document.getElementById('totalOffCampusHouses');
+                const availableOffCampusBeds = document.getElementById('availableOffCampusBeds');
+                const takenOffCampusBeds = document.getElementById('takenOffCampusBeds');
 
-            document.getElementById('totalOffCampusHouses').textContent = data.off_campus?.total_houses || 0;
-            document.getElementById('availableOffCampusBeds').textContent = data.off_campus?.available || 0;
-            document.getElementById('takenOffCampusBeds').textContent = data.off_campus?.taken || 0;
-
-            // Also update analytics page if it exists
-            if (document.getElementById('totalCapacity')) {
-                const totalCapacity = (data.on_campus?.total_capacity || 0) + (data.off_campus?.total_capacity || 0);
-                const currentOccupancy = (data.on_campus?.taken || 0) + (data.off_campus?.taken || 0);
-
-                document.getElementById('totalCapacity').textContent = totalCapacity;
-                document.getElementById('currentOccupancy').textContent = currentOccupancy;
-                document.getElementById('waitlistCount').textContent = data.pending_applications || 0;
-
-                // Update occupancy rates
-                const onCampusRate = data.on_campus?.total_capacity > 0 ?
-                    Math.round((data.on_campus.taken / data.on_campus.total_capacity) * 100) : 0;
-                const offCampusRate = data.off_campus?.total_capacity > 0 ?
-                    Math.round((data.off_campus.taken / data.off_campus.total_capacity) * 100) : 0;
-
-                const onFill = document.getElementById('onCampusOccupancyFill');
-                const onRate = document.getElementById('onCampusOccupancyRate');
-                const offFill = document.getElementById('offCampusOccupancyFill');
-                const offRate = document.getElementById('offCampusOccupancyRate');
-
-                if (onFill) onFill.style.width = `${onCampusRate}%`;
-                if (onRate) onRate.textContent = `${onCampusRate}%`;
-                if (offFill) offFill.style.width = `${offCampusRate}%`;
-                if (offRate) offRate.textContent = `${offCampusRate}%`;
+                if (totalOnCampusRooms) totalOnCampusRooms.innerText = data.on_campus?.total_rooms || 0;
+                if (availableOnCampusRooms) availableOnCampusRooms.innerText = data.on_campus?.available || 0;
+                if (takenOnCampusRooms) takenOnCampusRooms.innerText = data.on_campus?.taken || 0;
+                if (totalOffCampusHouses) totalOffCampusHouses.innerText = data.off_campus?.total_houses || 0;
+                if (availableOffCampusBeds) availableOffCampusBeds.innerText = data.off_campus?.available || 0;
+                if (takenOffCampusBeds) takenOffCampusBeds.innerText = data.off_campus?.taken || 0;
             }
-
         } catch (error) {
-            console.error('Error loading dashboard stats:', error);
-            showToast('Failed to load dashboard data', 'error');
+            console.error('Error loading dashboard:', error);
         }
     }
 
-    // Load students
-    async function loadStudents() {
+    async function loadRecentStudents() {
         try {
-            const response = await fetch('/api/students/');
-            const students = await response.json();
+            const response = await fetch('/api/students/?t=' + Date.now());
+            const data = await response.json();
+            console.log('Students data:', data);
 
-            const recentBody = document.getElementById('recentStudentsBody');
-            const allBody = document.getElementById('allStudentsBody');
-
-            if (recentBody) {
-                const recentStudents = students.slice(0, 5);
-                recentBody.innerHTML = recentStudents.map(s => `
-                    <tr>
-                        <td>${s.id}</td>
-                        <td>${s.student_id || 'N/A'}</td>
-                        <td>${s.first_name} ${s.last_name}</td>
-                        <td>${s.email}</td>
-                        <td><span class="status-badge active">Active</span></td>
-                        <td><i class="fas fa-eye action-icon" onclick="viewStudent(${s.id})"></i></td>
-                    </tr>
-                `).join('');
-            }
-
-            if (allBody) {
-                allBody.innerHTML = students.map(s => `
-                    <tr>
-                        <td>${s.id}</td>
-                        <td>${s.student_id || 'N/A'}</td>
-                        <td>${s.first_name} ${s.last_name}</td>
-                        <td>${s.email}</td>
-                        <td>${s.program || 'N/A'}</td>
-                        <td><span class="status-badge active">Active</span></td>
-                        <td>-</td>
-                        <td><i class="fas fa-eye action-icon" onclick="viewStudent(${s.id})"></i></td>
-                    </tr>
-                `).join('');
+            if (data.success && data.students) {
+                const tbody = document.getElementById('recentStudentsBody');
+                if (tbody && data.students.length > 0) {
+                    tbody.innerHTML = data.students.slice(0, 5).map(s => `
+                        <tr>
+                            <td>${s.id || 'N/A'}</td>
+                            <td>${s.student_id || 'N/A'}</td>
+                            <td>${s.first_name || ''} ${s.last_name || ''}</td>
+                            <td>${s.email || 'N/A'}</td>
+                            <td>${s.program || 'N/A'}</td>
+                            <td><i class="fas fa-eye action-icon" onclick="viewStudent(${s.id})" style="cursor:pointer; color:#3b82f6;"></i></td>
+                        </tr>
+                    `).join('');
+                } else if (tbody) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:40px;">No students found</td></tr>';
+                }
             }
         } catch (error) {
             console.error('Error loading students:', error);
-        }
-    }
-
-    // Load applications
-    async function loadApplications() {
-        try {
-            const response = await fetch('/api/applications/');
-            const apps = await response.json();
-
-            // Update application stats if on applications page
-            if (document.getElementById('totalApplications')) {
-                document.getElementById('totalApplications').textContent = apps.length;
-                document.getElementById('pendingApplications').textContent = apps.filter(a => a.status === 'pending').length;
-                document.getElementById('approvedApplications').textContent = apps.filter(a => a.status === 'approved').length;
-                document.getElementById('rejectedApplications').textContent = apps.filter(a => a.status === 'rejected').length;
+            const tbody = document.getElementById('recentStudentsBody');
+            if (tbody) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:40px;">Error loading students</td></tr>';
             }
-        } catch (error) {
-            console.error('Error loading applications:', error);
         }
     }
 
-    // Toast message
-    function showToast(message, type = 'info') {
-        const toast = document.getElementById('toast');
-        if (toast) {
-            toast.textContent = message;
-            toast.className = `toast ${type}`;
-            toast.classList.remove('hidden');
-            setTimeout(() => toast.classList.add('hidden'), 3000);
-        }
+    function viewStudent(id) {
+        alert('View student ID: ' + id);
     }
 
-    // Logout function
-    async function handleLogout() {
-        if (confirm('Are you sure you want to logout?')) {
-            try {
-                await fetch('/api/auth/logout/', { method: 'POST' });
-            } catch(e) {}
-            localStorage.clear();
-            sessionStorage.clear();
-            window.location.href = '/';
-        }
-    }
-
-    // Initialize everything
-    async function init() {
-        await loadDashboardStats();
-        await loadStudents();
-        await loadApplications();
-
-        // Setup logout button
-        const logoutBtn = document.querySelector('.logout-btn');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                handleLogout();
-            });
-        }
-
-        // Setup quick action buttons
-        const addHostelBtn = document.getElementById('quickAddHostelRoom');
-        if (addHostelBtn) {
-            addHostelBtn.addEventListener('click', () => {
-                window.location.href = '/on-campus.html';
-            });
-        }
-
-        const processAppsBtn = document.getElementById('quickProcessApp');
-        if (processAppsBtn) {
-            processAppsBtn.addEventListener('click', () => {
-                window.location.href = '/applications.html';
-            });
-        }
-
-        // Refresh every 30 seconds
-        setInterval(loadDashboardStats, 30000);
-    }
-
-    // Make functions global for onclick handlers
-    window.viewStudent = function(id) {
-        showToast(`View student ${id}`, 'info');
+    // Make refresh function available globally
+    window.refreshDashboard = function() {
+        console.log('Manual refresh triggered');
+        loadDashboard();
+        loadRecentStudents();
     };
 
-    window.revokeAccommodation = function(id) {
-        showToast(`Revoke accommodation for student ${id}`, 'warning');
-    };
+    // Initialize when DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('Admin dashboard initialized');
+        loadDashboard();
+        loadRecentStudents();
 
-    // Start the app
-    init();
+        // Refresh every 15 seconds
+        setInterval(() => {
+            console.log('Auto-refreshing dashboard...');
+            loadDashboard();
+            loadRecentStudents();
+        }, 15000);
+    });
+
+    // Also refresh when page becomes visible (coming back from another tab)
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            console.log('Page visible - refreshing');
+            loadDashboard();
+            loadRecentStudents();
+        }
+    });
+
+    window.viewStudent = viewStudent;
 })();
