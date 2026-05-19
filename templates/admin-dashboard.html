@@ -99,7 +99,7 @@
         .action-icon { color: #94a3b8; cursor: pointer; transition: color 0.2s; }
         .action-icon:hover { color: #3b82f6; }
 
-        .toast { position: fixed; bottom: 30px; right: 30px; padding: 14px 24px; background: #1e293b; color: white; border-radius: 40px; z-index: 1000; transition: 0.3s; }
+        .toast { position: fixed; bottom: 30px; right: 30px; padding: 14px 24px; background: #1e293b; color: white; border-radius: 40px; z-index: 1000; transition: 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.15); font-weight: 500; }
         .toast.hidden { opacity: 0; visibility: hidden; transform: translateY(10px); }
         .toast.success { background: #16a34a; }
         .toast.error { background: #dc2626; }
@@ -108,6 +108,8 @@
 
         @media (max-width: 1024px) { .sidebar { width: 240px; } .main { margin-left: 240px; } .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 768px) { .sidebar { width: 70px; } .logo-text, .logo-sub, .nav-item span, .nav-section-title { display: none; } .nav-item { justify-content: center; padding: 12px; } .nav-item i { margin: 0; } .main { margin-left: 70px; padding: 16px; } .kpi-grid { grid-template-columns: 1fr; } .stats-row { flex-direction: column; } .topbar { flex-direction: column; align-items: flex-start; } }
+        .manual-refresh-btn { background: #e2e8f0; border: none; border-radius: 40px; padding: 8px 16px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; }
+        .manual-refresh-btn:hover { background: #cbd5e1; transform: scale(0.98); }
     </style>
 </head>
 <body>
@@ -127,7 +129,7 @@
                 <a href="off-campus.html" class="nav-item"><i class="fas fa-home"></i> <span>Off‑Campus</span></a>
                 <a href="process-applications.html" class="nav-item"><i class="fas fa-check-double"></i> <span>Process Apps</span></a>
                 <a href="analytics.html" class="nav-item"><i class="fas fa-chart-pie"></i> <span>Analytics</span></a>
-                <a href="activity.html" class="nav-item"><i class="fas fa-clock"></i> <span>Activity Monitor</span></a>
+
                 <a href="export.html" class="nav-item"><i class="fas fa-download"></i> <span>Export Data</span></a>
                 <div class="nav-divider"></div>
                 <a href="/" class="nav-item logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a>
@@ -138,9 +140,12 @@
             <header class="topbar">
                 <div class="page-title">
                     <h1>Dashboard</h1>
-                    <p id="welcomeMsg">Welcome back, Admin!</p>
+                    <p id="welcomeMsg">Welcome back, Admin! Real-time overview</p>
                 </div>
-                <div class="admin-badge"><i class="fas fa-user-shield"></i> Administrator</div>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <button class="manual-refresh-btn" id="forceRefreshBtn"><i class="fas fa-sync-alt"></i> Refresh</button>
+                    <div class="admin-badge"><i class="fas fa-user-shield"></i> Administrator</div>
+                </div>
             </header>
 
             <div class="kpi-grid">
@@ -168,183 +173,266 @@
                     <div class="action-buttons">
                         <button class="btn-secondary" onclick="location.href='on-campus.html'"><i class="fas fa-plus-circle"></i> Add Room / Hostel</button>
                         <button class="btn-outline" onclick="location.href='process-applications.html'"><i class="fas fa-check-double"></i> Process Applications</button>
-                        <button class="btn-refresh" onclick="forceRefresh()"><i class="fas fa-sync-alt"></i> Refresh Stats</button>
                     </div>
                 </div>
             </div>
 
             <div class="recent-section">
-                <div class="section-header"><h3>Recent Students</h3></div>
+                <div class="section-header"><h3>Recent Students <i class="fas fa-user-plus" style="font-size: 14px; color:#64748b;"></i></h3></div>
                 <div class="table-wrapper">
                     <table class="student-table">
                         <thead><tr><th>ID</th><th>Student ID</th><th>Name</th><th>Email</th><th>Program</th><th>Actions</th></tr></thead>
-                        <tbody id="recentStudentsBody"><tr><td colspan="6" class="loading">Loading students...<\/td><\/tr><\/tbody>
-                    <\/table>
-                <\/div>
-            <\/div>
-        <\/main>
-    <\/div>
+                        <tbody id="recentStudentsBody"><tr><td colspan="6" class="loading"><i class="fas fa-spinner fa-pulse"></i> Loading students...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
 
-    <div id="toast" class="toast hidden"><\/div>
+    <div id="toast" class="toast hidden"></div>
 
     <script>
-        let lastStudentCount = 0;
-        let refreshInterval = null;
+        // ======================== INTEGRATED DASHBOARD LOGIC ========================
+        (function() {
+            'use strict';
 
-        function showToast(message, type = 'success') {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.className = `toast ${type}`;
-            toast.classList.remove('hidden');
-            setTimeout(() => toast.classList.add('hidden'), 3000);
-        }
+            let refreshIntervalId = null;
+            let isPageVisible = true;
 
-        function getTimestamp() {
-            return new Date().getTime();
-        }
-
-        async function loadDashboard() {
-            try {
-                const response = await fetch(`/api/dashboard/stats/?t=${getTimestamp()}`, {
-                    cache: 'no-store',
-                    headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
-                });
-                const data = await response.json();
-                console.log('Dashboard data:', data);
-
-                if (data.success) {
-                    document.getElementById('totalStudents').innerText = data.total_students || 0;
-                    document.getElementById('accommodatedCount').innerText = data.accommodated_students || 0;
-                    document.getElementById('pendingApps').innerText = data.pending_applications || 0;
-                    document.getElementById('approvedApps').innerText = data.approved_applications || 0;
-                    document.getElementById('totalOnCampusRooms').innerText = data.on_campus?.total_rooms || 0;
-                    document.getElementById('availableOnCampusRooms').innerText = data.on_campus?.available || 0;
-                    document.getElementById('takenOnCampusRooms').innerText = data.on_campus?.taken || 0;
-                    document.getElementById('totalOffCampusHouses').innerText = data.off_campus?.total_houses || 0;
-                    document.getElementById('availableOffCampusBeds').innerText = data.off_campus?.available || 0;
-                    document.getElementById('takenOffCampusBeds').innerText = data.off_campus?.taken || 0;
-                }
-            } catch (error) {
-                console.error('Dashboard error:', error);
+            // Toast notification helper
+            function showToast(message, type = 'success') {
+                const toast = document.getElementById('toast');
+                if (!toast) return;
+                toast.textContent = message;
+                toast.className = `toast ${type}`;
+                toast.classList.remove('hidden');
+                setTimeout(() => toast.classList.add('hidden'), 3000);
             }
-        }
 
-        async function loadStudents() {
-            try {
-                const response = await fetch(`/api/students/?t=${getTimestamp()}`, {
-                    cache: 'no-store',
-                    headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
-                });
-                const data = await response.json();
-                console.log('Students data:', data);
-
-                if (data.success && data.students) {
-                    const tbody = document.getElementById('recentStudentsBody');
-                    const studentCount = data.students.length;
-
-                    if (studentCount !== lastStudentCount) {
-                        console.log(`Student count changed: ${lastStudentCount} -> ${studentCount}`);
-                        lastStudentCount = studentCount;
+            // Get CSRF token from cookies for logout
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
                     }
+                }
+                return cookieValue;
+            }
 
-                    if (data.students.length > 0) {
-                        tbody.innerHTML = data.students.slice(0, 5).map(s => `
+            // Fetch dashboard stats (KPIs + rooms/hostels data)
+            async function loadDashboard() {
+                try {
+                    const response = await fetch(`/api/dashboard/stats/?t=${Date.now()}`, {
+                        cache: 'no-store',
+                        headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+                    });
+                    const data = await response.json();
+                    console.log('[Dashboard] Stats loaded:', data);
+
+                    if (data.success) {
+                        // Update KPI elements
+                        const totalStudentsElem = document.getElementById('totalStudents');
+                        const accommodatedElem = document.getElementById('accommodatedCount');
+                        const pendingAppsElem = document.getElementById('pendingApps');
+                        const approvedAppsElem = document.getElementById('approvedApps');
+
+                        if (totalStudentsElem) totalStudentsElem.innerText = data.total_students || 0;
+                        if (accommodatedElem) accommodatedElem.innerText = data.accommodated_students || 0;
+                        if (pendingAppsElem) pendingAppsElem.innerText = data.pending_applications || 0;
+                        if (approvedAppsElem) approvedAppsElem.innerText = data.approved_applications || 0;
+
+                        // On-Campus room stats
+                        const totalOn = document.getElementById('totalOnCampusRooms');
+                        const availOn = document.getElementById('availableOnCampusRooms');
+                        const takenOn = document.getElementById('takenOnCampusRooms');
+                        if (totalOn) totalOn.innerText = data.on_campus?.total_rooms || 0;
+                        if (availOn) availOn.innerText = data.on_campus?.available || 0;
+                        if (takenOn) takenOn.innerText = data.on_campus?.taken || 0;
+
+                        // Off-Campus house stats
+                        const totalOff = document.getElementById('totalOffCampusHouses');
+                        const availOff = document.getElementById('availableOffCampusBeds');
+                        const takenOff = document.getElementById('takenOffCampusBeds');
+                        if (totalOff) totalOff.innerText = data.off_campus?.total_houses || 0;
+                        if (availOff) availOff.innerText = data.off_campus?.available || 0;
+                        if (takenOff) takenOff.innerText = data.off_campus?.taken || 0;
+                    } else {
+                        console.warn('Dashboard API returned success false');
+                    }
+                } catch (error) {
+                    console.error('[Dashboard] Error loading stats:', error);
+                    // silent fail, keep existing numbers
+                }
+            }
+
+            // Fetch recent students (max 5)
+            async function loadRecentStudents() {
+                try {
+                    const response = await fetch(`/api/students/?t=${Date.now()}`, {
+                        cache: 'no-store',
+                        headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+                    });
+                    const data = await response.json();
+                    console.log('[Dashboard] Students fetched:', data);
+
+                    const tbody = document.getElementById('recentStudentsBody');
+                    if (!tbody) return;
+
+                    if (data.success && data.students && data.students.length > 0) {
+                        const recentFive = data.students.slice(0, 5);
+                        tbody.innerHTML = recentFive.map(s => `
                             <tr>
-                                <td>${s.id || 'N/A'}</td>
-                                <td>${s.student_id || 'N/A'}</td>
-                                <td>${(s.first_name || '') + ' ' + (s.last_name || '')}</td>
-                                <td>${s.email || 'N/A'}</td>
-                                <td>${s.program || 'N/A'}</td>
-                                <td><i class="fas fa-eye action-icon" onclick="showToast('View student ${s.id}')"><\/i></td>
+                                <td>${escapeHtml(String(s.id || 'N/A'))}</td>
+                                <td>${escapeHtml(String(s.student_id || 'N/A'))}</td>
+                                <td>${escapeHtml((s.first_name || '') + ' ' + (s.last_name || ''))}</td>
+                                <td>${escapeHtml(s.email || 'N/A')}</td>
+                                <td>${escapeHtml(s.program || 'N/A')}</td>
+                                <td><i class="fas fa-eye action-icon" onclick="window.viewStudentDetails(${s.id})" style="cursor:pointer; color:#3b82f6;" title="View Student"></i></td>
                             </tr>
                         `).join('');
                     } else {
-                        tbody.innerHTML = '<tr><td colspan="6" class="loading">No students found<\/td><\/tr>';
+                        tbody.innerHTML = '<tr><td colspan="6" class="loading"><i class="fas fa-inbox"></i> No students registered yet</td></tr>';
                     }
-                }
-            } catch (error) {
-                console.error('Students error:', error);
-                document.getElementById('recentStudentsBody').innerHTML = '<tr><td colspan="6" class="loading">Error loading students<\/td><\/tr>';
-            }
-        }
-
-        function forceRefresh() {
-            showToast('Refreshing dashboard...', 'success');
-            loadDashboard();
-            loadStudents();
-        }
-
-        function handleLogout() {
-            if (confirm('Are you sure you want to logout?')) {
-                if (refreshInterval) clearInterval(refreshInterval);
-                fetch('/api/auth/logout/', { method: 'POST', headers: { 'X-CSRFToken': getCookie('csrftoken') } })
-                    .then(() => { window.location.href = '/'; })
-                    .catch(() => { window.location.href = '/'; });
-            }
-        }
-
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
+                } catch (error) {
+                    console.error('[Dashboard] Error loading students:', error);
+                    const tbody = document.getElementById('recentStudentsBody');
+                    if (tbody) tbody.innerHTML = '<tr><td colspan="6" class="loading"><i class="fas fa-exclamation-triangle"></i> Could not load students</td></tr>';
                 }
             }
-            return cookieValue;
-        }
 
-        document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
-            e.preventDefault();
-            handleLogout();
-        });
-
-        window.forceRefresh = forceRefresh;
-
-        // Listen for storage events from other tabs
-        window.addEventListener('storage', function(event) {
-            if (event.key === 'applicationsUpdated' || event.key === 'refreshDashboard') {
-                console.log('Refresh triggered from another tab');
-                loadDashboard();
-                loadStudents();
+            // simple XSS prevention
+            function escapeHtml(str) {
+                if (!str) return '';
+                return str.replace(/[&<>]/g, function(m) {
+                    if (m === '&') return '&amp;';
+                    if (m === '<') return '&lt;';
+                    if (m === '>') return '&gt;';
+                    return m;
+                }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+                    return c;
+                });
             }
-        });
 
-        // Listen for custom event
-        document.addEventListener('applicationsUpdated', function() {
-            console.log('Applications updated event received');
-            loadDashboard();
-            loadStudents();
-        });
+            // Global view function for student details (toast simulation)
+            window.viewStudentDetails = function(studentId) {
+                showToast(`Viewing student profile ID: ${studentId} (demo action)`, 'success');
+                console.log(`View student ${studentId}`);
+            };
 
-        // Initial load
-        loadDashboard();
-        loadStudents();
-
-        // Auto-refresh every 5 seconds
-        refreshInterval = setInterval(() => {
-            console.log('Auto-refreshing dashboard...');
-            loadDashboard();
-            loadStudents();
-        }, 5000);
-
-        // Refresh when page becomes visible
-        document.addEventListener('visibilitychange', function() {
-            if (!document.hidden) {
-                console.log('Page became visible - refreshing');
+            // Combined refresh of all widgets
+            function fullRefresh() {
+                console.log('[Dashboard] Manual/auto refresh triggered');
                 loadDashboard();
-                loadStudents();
+                loadRecentStudents();
+                showToast('Dashboard refreshed', 'success');
             }
-        });
 
-        // Clean up on page unload
-        window.addEventListener('beforeunload', function() {
-            if (refreshInterval) clearInterval(refreshInterval);
-        });
-    <\/script>
-<\/body>
-<\/html>
+            // Handle logout with CSRF token
+            async function handleLogout() {
+                if (!confirm('Are you sure you want to logout?')) return;
+                if (refreshIntervalId) clearInterval(refreshIntervalId);
+                try {
+                    const csrfToken = getCookie('csrftoken');
+                    await fetch('/api/auth/logout/', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrfToken || '',
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                } catch (err) {
+                    console.warn('Logout fetch error, redirecting anyway');
+                }
+                window.location.href = '/';
+            }
+
+            // Cross-tab synchronization: listen for storage events to refresh data
+            window.addEventListener('storage', function(event) {
+                if (event.key === 'applicationsUpdated' || event.key === 'refreshDashboard' || event.key === 'studentDataChanged') {
+                    console.log('[CrossTab] Refresh triggered via storage event');
+                    loadDashboard();
+                    loadRecentStudents();
+                }
+            });
+
+            // Custom event listener for same-document updates
+            document.addEventListener('applicationsUpdated', function() {
+                console.log('[Event] applicationsUpdated received');
+                loadDashboard();
+                loadRecentStudents();
+            });
+
+            // Visibility API: refresh when tab becomes active again
+            document.addEventListener('visibilitychange', function() {
+                if (!document.hidden) {
+                    console.log('[Visibility] Tab active — refreshing');
+                    loadDashboard();
+                    loadRecentStudents();
+                }
+            });
+
+            // Setup periodic refresh (every 6 seconds for near real-time)
+            function startAutoRefresh() {
+                if (refreshIntervalId) clearInterval(refreshIntervalId);
+                refreshIntervalId = setInterval(() => {
+                    if (!document.hidden) {
+                        console.log('[AutoRefresh] Periodic update');
+                        loadDashboard();
+                        loadRecentStudents();
+                    } else {
+                        console.log('[AutoRefresh] Tab hidden — skipping refresh');
+                    }
+                }, 6000); // 6 seconds interval for responsiveness
+            }
+
+            // Attach manual refresh button
+            const refreshBtn = document.getElementById('forceRefreshBtn');
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    fullRefresh();
+                });
+            }
+
+            // Logout handler
+            const logoutLink = document.getElementById('logoutBtn');
+            if (logoutLink) {
+                logoutLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    handleLogout();
+                });
+            }
+
+            // Simulate welcome message with dynamic timestamp
+            const welcomeEl = document.getElementById('welcomeMsg');
+            if (welcomeEl) {
+                const hour = new Date().getHours();
+                let greeting = 'Good day';
+                if (hour < 12) greeting = 'Good morning';
+                else if (hour < 18) greeting = 'Good afternoon';
+                else greeting = 'Good evening';
+                welcomeEl.innerText = `${greeting}, Admin! Live accommodation stats.`;
+            }
+
+            // Initial load and start auto-refresh
+            loadDashboard();
+            loadRecentStudents();
+            startAutoRefresh();
+
+            // Optional: Cleanup on page unload (not critical but safe)
+            window.addEventListener('beforeunload', function() {
+                if (refreshIntervalId) clearInterval(refreshIntervalId);
+            });
+
+            // Expose forceRefresh to global console if needed
+            window.forceDashboardRefresh = fullRefresh;
+        })();
+    </script>
+</body>
+</html>
