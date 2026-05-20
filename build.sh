@@ -1,14 +1,14 @@
 #!/bin/bash
 set -o errexit
 
-# Install dependencies
+echo "--- Installing dependencies ---"
 pip install -r requirements.txt
 
-# Run migrations (this is what you need!)
+echo "--- Running migrations ---"
 python manage.py makemigrations --noinput
 python manage.py migrate --noinput
 
-# Create superuser automatically (if doesn't exist)
+echo "--- Creating superuser ---"
 python manage.py shell << EOF
 from django.contrib.auth import get_user_model
 User = get_user_model()
@@ -19,5 +19,7 @@ else:
     print('Superuser already exists')
 EOF
 
-# Collect static files
+echo "--- Collecting static files ---"
 python manage.py collectstatic --noinput
+
+echo "--- Build completed successfully ---"
