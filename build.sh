@@ -1,7 +1,23 @@
 #!/bin/bash
-
 set -o errexit
 
+# Install dependencies
 pip install -r requirements.txt
-python manage.py migrate
+
+# Run migrations (this is what you need!)
+python manage.py makemigrations --noinput
+python manage.py migrate --noinput
+
+# Create superuser automatically (if doesn't exist)
+python manage.py shell << EOF
+from django.contrib.auth import get_user_model
+User = get_user_model()
+if not User.objects.filter(username='admin').exists():
+    User.objects.create_superuser('admin', 'admin@mu.edu.zm', 'Admin123!')
+    print('Superuser created successfully')
+else:
+    print('Superuser already exists')
+EOF
+
+# Collect static files
 python manage.py collectstatic --noinput
